@@ -3,65 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 穩定擷取版</title>
+    <title>專屬 1 號 - 音訊擷取</title>
     <style>
         :root { --bg: #1c252e; --gold: #d4af37; }
         body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .glass-card { width: 100%; max-width: 400px; padding: 35px 20px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.3); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin-bottom: 5px; }
-        
-        /* 輸入框優化 */
-        textarea { width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 12px; font-size: 0.8rem; margin-top: 15px; outline: none; }
-        
-        .btn-main { display: block; width: 100%; padding: 15px; margin: 20px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; cursor: pointer; }
-        
-        .item { background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 12px; border-radius: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-        .dl-link { background: var(--gold); color: #1c252e; text-decoration: none; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; }
-        .error-msg { color: #ff4757; font-size: 0.7rem; }
+        .glass-card { width: 100%; max-width: 380px; padding: 40px 20px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin: 0 0 5px 0; }
+        textarea { width: 100%; height: 110px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 15px; font-size: 0.85rem; margin-top: 20px; outline: none; box-sizing: border-box; }
+        .btn-main { display: block; width: 100%; padding: 18px; margin: 25px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .btn-main:active { background: rgba(212, 175, 55, 0.1); transform: scale(0.98); }
+        .result-item { background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; padding: 15px; margin-top: 10px; text-align: left; }
+        .dl-btn { display: inline-block; background: var(--gold); color: #1c252e; text-decoration: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
     <h2>音訊擷取</h2>
-    <p style="font-size: 0.7rem; opacity: 0.5;">請貼上「單曲」網址，多首請分行</p>
+    <p style="font-size: 0.7rem; opacity: 0.5; letter-spacing: 1px;">輸入單曲網址，多首請分行</p>
     
-    <textarea id="urlInput" placeholder="請貼上分享影片的網址..."></textarea>
+    <textarea id="urlInput" placeholder="在此貼上 YouTube 分享連結..."></textarea>
     
-    <button class="btn-main" onclick="process()">開始轉換</button>
+    <button class="btn-main" onclick="startConvert()">開始轉換</button>
     
-    <div id="queue"></div>
+    <div id="resultQueue"></div>
 </div>
 
 <script>
-    function process() {
+    function startConvert() {
         const input = document.getElementById('urlInput').value;
         const urls = input.split('\n').filter(u => u.trim() !== '');
-        const queue = document.getElementById('queue');
-        queue.innerHTML = ''; // 清空舊的
+        const queue = document.getElementById('resultQueue');
+        queue.innerHTML = '';
 
         urls.forEach(url => {
-            const vid = extractID(url);
+            const vid = getYouTubeID(url);
             const item = document.createElement('div');
-            item.className = 'item';
+            item.className = 'result-item';
 
             if (vid) {
                 item.innerHTML = `
-                    <span style="font-size:0.7rem; opacity:0.8;">來源: ${vid}</span>
-                    <a href="https://api.vevioz.com/api/button/mp3/${vid}" target="_blank" class="dl-link">點此跳轉下載 MP3</a>
+                    <div style="font-size:0.75rem; color:var(--gold);">任務編號: ${vid}</div>
+                    <a href="https://api.vevioz.com/api/button/mp3/${vid}" target="_blank" class="dl-btn">📥 點此下載 MP3</a>
                 `;
             } else {
-                item.innerHTML = `<span class="error-msg">⚠️ 偵測到歌單連結或無效網址，請改貼單曲分享連結。</span>`;
+                item.innerHTML = `<div style="color:#ff4757; font-size:0.8rem;">⚠️ 網址格式不正確，請檢查。</div>`;
             }
             queue.appendChild(item);
         });
     }
 
-    function extractID(url) {
-        // 優化正則表達式，增加容錯
-        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[7].length == 11) ? match[7] : false;
+    function getYouTubeID(url) {
+        // 重新設計的「強效型」辨識邏輯
+        url = url.trim();
+        let id = '';
+        if (url.includes('youtu.be/')) {
+            id = url.split('youtu.be/')[1].split(/[?#]/)[0];
+        } else if (url.includes('v=')) {
+            id = url.split('v=')[1].split('&')[0];
+        } else if (url.includes('embed/')) {
+            id = url.split('embed/')[1].split('?')[0];
+        }
+        return (id && id.length === 11) ? id : false;
     }
 </script>
 
