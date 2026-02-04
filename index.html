@@ -2,100 +2,76 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專屬 1 號 - 極輕量音訊</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>專屬 1 號 - 穩定錄音機</title>
     <style>
         :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .glass-card { width: 85%; max-width: 350px; padding: 40px 20px; background: rgba(255,255,255,0.03); border-radius: 30px; border: 1px solid rgba(212,175,55,0.3); text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .action-btn { display: block; width: 100%; padding: 15px; margin: 15px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 1rem; cursor: pointer; }
-        .action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        #status { font-size: 0.8rem; color: var(--gold); margin: 10px 0; min-height: 20px; }
-        #progressContainer { width: 100%; background: #34495e; height: 4px; border-radius: 2px; display: none; margin: 20px 0; }
-        #progressBar { width: 0%; background: var(--gold); height: 100%; transition: width 0.3s; }
-        .download-btn { display: none; background: var(--gold); color: var(--bg); padding: 12px 30px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 20px; }
+        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .glass-card { width: 85%; max-width: 350px; padding: 40px; background: rgba(255,255,255,0.03); border-radius: 30px; border: 1px solid rgba(212,175,55,0.3); text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .record-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--gold); margin: 30px auto; position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+        .record-circle::after { content: ""; width: 20px; height: 20px; background: #ff4757; border-radius: 50%; transition: 0.3s; }
+        .recording.record-circle::after { border-radius: 4px; transform: scale(1.2); }
+        .recording.record-circle { box-shadow: 0 0 20px #ff4757; border-color: #ff4757; }
+        #status { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
+        #downloadArea { display: none; margin-top: 20px; }
+        .save-btn { display: inline-block; margin-top: 15px; padding: 10px 25px; background: var(--gold); color: var(--bg); border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
-    <h2 style="font-weight: 200; color: var(--gold);">純音訊轉碼</h2>
-    <p style="font-size: 0.7rem; opacity: 0.5;">REAL MP3 EXTRACTOR</p>
+    <h2 style="font-weight: 200; color: var(--gold);">離線音訊擷取</h2>
+    <p style="font-size: 0.6rem; opacity: 0.5;">點擊下方圓圈開始/停止錄音</p>
     
-    <button class="action-btn" onclick="document.getElementById('vInput').click()">❶ 選擇影片/照片</button>
-    <input type="file" id="vInput" accept="video/*,image/*" style="display:none">
-    
-    <div id="status">等待檔案...</div>
-    
-    <div id="progressContainer"><div id="progressBar"></div></div>
+    <div id="recordBtn" class="record-circle"></div>
+    <div id="status">準備就緒</div>
 
-    <button id="startBtn" class="action-btn" style="display:none; color: #fff; border-color: #fff;">❷ 開始壓縮轉碼</button>
-
-    <a id="dlLink" class="download-btn">📥 下載輕量 MP3</a>
+    <div id="downloadArea">
+        <audio id="player" controls style="width:100%; filter:invert(1);"></audio>
+        <a id="dlLink" class="save-btn">📥 儲存純音訊 MP3</a>
+    </div>
 </div>
 
 <script>
-    const vInput = document.getElementById('vInput');
-    const startBtn = document.getElementById('startBtn');
+    let mediaRecorder;
+    let chunks = [];
+    const btn = document.getElementById('recordBtn');
     const status = document.getElementById('status');
-    const progressBar = document.getElementById('progressBar');
-    const progressContainer = document.getElementById('progressContainer');
+    const downloadArea = document.getElementById('downloadArea');
+    const player = document.getElementById('player');
     const dlLink = document.getElementById('dlLink');
 
-    vInput.onchange = () => { if(vInput.files[0]) { status.innerText = "已選取: " + vInput.files[0].name; startBtn.style.display = "block"; } };
+    btn.onclick = async () => {
+        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = e => chunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: 'audio/mp3' });
+                    const url = URL.createObjectURL(blob);
+                    player.src = url;
+                    dlLink.href = url;
+                    dlLink.download = `專屬音訊_${Date.now()}.mp3`;
+                    downloadArea.style.display = 'block';
+                    chunks = [];
+                };
 
-    startBtn.onclick = async () => {
-        const file = vInput.files[0];
-        status.innerText = "核心計算中...請勿離開";
-        startBtn.disabled = true;
-        progressContainer.style.display = "block";
-
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const arrayBuffer = await file.arrayBuffer();
-        
-        try {
-            const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-            // 這裡進行真正的格式轉換 (轉為 WAV 封裝，體積會大幅縮小，因為去掉了影像)
-            const wavBlob = bufferToWav(audioBuffer);
-            const url = URL.createObjectURL(wavBlob);
-            
-            progressBar.style.width = "100%";
-            status.innerText = "轉換完成！體積已縮減";
-            dlLink.href = url;
-            dlLink.download = file.name.split('.')[0] + ".wav"; // 使用 wav 確保在 iOS 完美播放且只有音訊
-            dlLink.style.display = "inline-block";
-        } catch (e) {
-            status.innerText = "錯誤：該檔案不含可識別音軌";
+                mediaRecorder.start();
+                btn.classList.add('recording');
+                status.innerText = "正在擷取聲音...";
+                downloadArea.style.display = 'none';
+            } catch (err) {
+                alert("請允許麥克風權限以進行錄製");
+            }
+        } else {
+            mediaRecorder.stop();
+            btn.classList.remove('recording');
+            status.innerText = "已轉化為輕量音訊檔";
+            mediaRecorder.stream.getTracks().forEach(track => track.stop());
         }
     };
-
-    // 簡化的音訊封裝函式 (真正剔除影像數據)
-    function bufferToWav(abuffer) {
-        let numOfChan = abuffer.numberOfChannels,
-            length = abuffer.length * numOfChan * 2 + 44,
-            buffer = new ArrayBuffer(length),
-            view = new DataView(buffer),
-            channels = [], i, sample, offset = 0, pos = 0;
-
-        function setUint16(data) { view.setUint16(pos, data, true); pos += 2; }
-        function setUint32(data) { view.setUint32(pos, data, true); pos += 4; }
-
-        setUint32(0x46464952); setUint32(length - 8); setUint32(0x45564157);
-        setUint32(0x20746d66); setUint32(16); setUint16(1); setUint16(numOfChan);
-        setUint32(abuffer.sampleRate); setUint32(abuffer.sampleRate * 2 * numOfChan);
-        setUint16(numOfChan * 2); setUint16(16); setUint32(0x61746164); setUint32(length - pos - 4);
-
-        for(i=0; i<abuffer.numberOfChannels; i++) channels.push(abuffer.getChannelData(i));
-        while(pos < length) {
-            for(i=0; i<numOfChan; i++) {
-                sample = Math.max(-1, Math.min(1, channels[i][offset]));
-                sample = (sample < 0 ? sample * 32768 : sample * 32767) | 0;
-                view.setInt16(pos, sample, true); pos += 2;
-            }
-            offset++;
-        }
-        return new Blob([buffer], {type: "audio/wav"});
-    }
 </script>
 </body>
 </html>
