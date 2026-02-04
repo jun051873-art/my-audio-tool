@@ -3,101 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 極致擷取</title>
+    <title>專屬 1 號 - 雲端擷取</title>
     <style>
         :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .glass-card { width: 100%; max-width: 400px; padding: 40px 25px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.3); text-align: center; position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; }
         
-        /* 賈伯斯風格：金絲細邊框與流光 */
-        .glass-card {
-            position: relative; width: 85%; max-width: 350px; padding: 40px 25px;
-            background: linear-gradient(145deg, #232e3a, #1a222a);
-            border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.4);
-            text-align: center; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.6);
-        }
+        textarea { width: 100%; height: 120px; background: rgba(0,0,0,0.2); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 15px; box-sizing: border-box; font-size: 0.8rem; margin-top: 20px; outline: none; }
+        textarea:focus { border-color: var(--gold); }
 
-        /* 光影流過動畫 */
-        .glass-card::before {
-            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
-            transform: skewX(-25deg); animation: shine 3s infinite;
-        }
-
-        @keyframes shine { 100% { left: 200%; } }
-
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin-bottom: 5px; }
-        .sub-title { font-size: 0.6rem; opacity: 0.4; letter-spacing: 2px; margin-bottom: 30px; }
-
-        .btn-main {
-            display: block; width: 100%; padding: 18px; margin: 15px 0;
-            background: transparent; color: var(--gold);
-            border: 1px solid var(--gold); border-radius: 50px;
-            font-size: 0.9rem; letter-spacing: 2px; cursor: pointer;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .btn-main:active { transform: scale(0.96); background: rgba(212, 175, 55, 0.1); }
-        #status { font-size: 0.8rem; color: #8899a6; margin: 15px 0; min-height: 1.2rem; }
+        .btn-main { display: block; width: 100%; padding: 18px; margin: 20px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 0.9rem; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
+        .btn-main:active { transform: scale(0.95); background: rgba(212, 175, 55, 0.1); }
         
-        /* 播放器美化 */
-        #resultArea { display: none; margin-top: 25px; animation: fadeIn 0.8s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        audio { width: 100%; height: 35px; filter: invert(1) hue-rotate(180deg) brightness(1.4); }
-        .save-link {
-            display: inline-block; margin-top: 20px; font-weight: bold;
-            color: var(--gold); text-decoration: none; font-size: 0.85rem;
-            border-bottom: 1px solid var(--gold); padding-bottom: 2px;
-        }
+        #queue { margin-top: 20px; text-align: left; max-height: 200px; overflow-y: auto; }
+        .item { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .status-tag { color: var(--gold); font-size: 0.7rem; }
+        .download-btn { color: #fff; text-decoration: none; border: 1px solid #fff; padding: 2px 8px; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
-    <h2>專屬 1 號</h2>
-    <div class="sub-title">PURE AUDIO EXTRACTOR</div>
+    <h2>雲端音訊擷取</h2>
+    <p style="font-size: 0.6rem; opacity: 0.5;">支援單曲或批量歌單 (一行一個網址)</p>
     
-    <button class="btn-main" onclick="document.getElementById('fileIn').click()">❶ 導入錄影檔案</button>
-    <input type="file" id="fileIn" accept="video/*" style="display:none">
+    <textarea id="urlInput" placeholder="請貼上 YouTube 網址...&#10;https://youtube.com/...&#10;https://youtube.com/..."></textarea>
     
-    <div id="status">等待指令...</div>
-
-    <div id="resultArea">
-        <audio id="player" controls></audio>
-        <a id="dlLink" class="save-link">📥 儲存為輕量 MP3 檔案</a>
-        <p style="font-size: 0.6rem; color: #556677; margin-top: 15px;">已剔除影像數據，容量縮減完成</p>
-    </div>
+    <button class="btn-main" onclick="processUrls()">開始批量轉換</button>
+    
+    <div id="queue"></div>
 </div>
 
 <script>
-    const fileIn = document.getElementById('fileIn');
-    const status = document.getElementById('status');
-    const resultArea = document.getElementById('resultArea');
-    const player = document.getElementById('player');
-    const dlLink = document.getElementById('dlLink');
-
-    fileIn.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        status.innerText = "正在執行深度音軌分離...";
-        resultArea.style.display = "none";
-
-        // 💡 關鍵優化：使用 Blob URL 並強制指定 MIME 類型，不進行耗電解碼
-        const blobUrl = URL.createObjectURL(file);
+    function processUrls() {
+        const input = document.getElementById('urlInput').value;
+        const urls = input.split('\n').filter(url => url.trim() !== '');
+        const queue = document.getElementById('queue');
         
-        // 模擬「賈伯斯式」的流暢等待感
-        setTimeout(() => {
-            player.src = blobUrl;
-            dlLink.href = blobUrl;
-            // 重新命名副檔名，幫助系統識別為純音訊，體積顯示會變小
-            const fileName = file.name.replace(/\.[^/.]+$/, "") + "_純淨音訊.mp3";
-            dlLink.download = fileName;
+        if (urls.length === 0) return alert("請輸入網址");
 
-            status.innerText = "分離完成。";
-            resultArea.style.display = "block";
-        }, 1200);
-    };
+        urls.forEach(url => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 60%;">${url}</span>
+                <span class="status-tag">轉換中...</span>
+            `;
+            queue.appendChild(item);
+
+            // 使用第三方的轉換 API (以開源接口為例)
+            // 這裡模擬調用過程，實際運作會串接 API
+            fetch(`https://api.vevioz.com/api/button/mp3/${extractID(url)}`)
+                .then(() => {
+                    item.querySelector('.status-tag').innerHTML = `<a href="https://api.vevioz.com/api/button/mp3/${extractID(url)}" target="_blank" class="download-btn">📥 下載</a>`;
+                })
+                .catch(() => {
+                    item.querySelector('.status-tag').innerText = "失敗";
+                });
+        });
+    }
+
+    function extractID(url) {
+        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[7].length == 11) ? match[7] : false;
+    }
 </script>
 
 </body>
