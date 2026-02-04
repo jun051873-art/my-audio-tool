@@ -3,58 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 音訊擷取</title>
+    <title>專屬 1 號 - 極致音訊下載</title>
     <style>
         :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .glass-card { width: 100%; max-width: 380px; padding: 40px 20px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin: 0 0 5px 0; }
-        textarea { width: 100%; height: 110px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 15px; font-size: 0.85rem; margin-top: 20px; outline: none; box-sizing: border-box; }
+        body { background-color: var(--bg); color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .glass-card { width: 100%; max-width: 380px; padding: 40px 20px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        
+        /* 賈伯斯風格光影 */
+        .glass-card::before { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.05), transparent); transform: skewX(-25deg); animation: shine 4s infinite; }
+        @keyframes shine { 100% { left: 200%; } }
+
+        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin: 0 0 10px 0; }
+        textarea { width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 15px; font-size: 0.85rem; margin-top: 15px; outline: none; box-sizing: border-box; }
+        
         .btn-main { display: block; width: 100%; padding: 18px; margin: 25px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
         .btn-main:active { background: rgba(212, 175, 55, 0.1); transform: scale(0.98); }
-        .result-item { background: rgba(212, 175, 55, 0.05); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; padding: 15px; margin-top: 10px; text-align: left; }
-        .dl-btn { display: inline-block; background: var(--gold); color: #1c252e; text-decoration: none; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
+        
+        .result-item { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-top: 12px; border: 1px solid rgba(212, 175, 55, 0.1); }
+        .dl-btn { display: inline-block; background: var(--gold); color: #1c252e; text-decoration: none; padding: 10px 25px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
     <h2>音訊擷取</h2>
-    <p style="font-size: 0.7rem; opacity: 0.5; letter-spacing: 1px;">輸入單曲網址，多首請分行</p>
+    <p style="font-size: 0.7rem; opacity: 0.5;">貼上單曲網址，系統將自動處理</p>
     
-    <textarea id="urlInput" placeholder="在此貼上 YouTube 分享連結..."></textarea>
+    <textarea id="urlInput" placeholder="在此貼上分享連結..."></textarea>
     
-    <button class="btn-main" onclick="startConvert()">開始轉換</button>
+    <button class="btn-main" onclick="process()">開始安全轉換</button>
     
-    <div id="resultQueue"></div>
+    <div id="display"></div>
 </div>
 
 <script>
-    function startConvert() {
-        const input = document.getElementById('urlInput').value;
-        const urls = input.split('\n').filter(u => u.trim() !== '');
-        const queue = document.getElementById('resultQueue');
-        queue.innerHTML = '';
+    function process() {
+        const val = document.getElementById('urlInput').value;
+        const urls = val.split('\n').filter(u => u.trim() !== '');
+        const display = document.getElementById('display');
+        display.innerHTML = '';
 
         urls.forEach(url => {
-            const vid = getYouTubeID(url);
+            const id = getID(url);
             const item = document.createElement('div');
             item.className = 'result-item';
 
-            if (vid) {
+            if (id) {
+                // 使用支援 HTTPS 的新 API 接口
+                const dlUrl = `https://p.oceansaver.in/external/download.php?url=https://www.youtube.com/watch?v=${id}&format=mp3`;
                 item.innerHTML = `
-                    <div style="font-size:0.75rem; color:var(--gold);">任務編號: ${vid}</div>
-                    <a href="https://api.vevioz.com/api/button/mp3/${vid}" target="_blank" class="dl-btn">📥 點此下載 MP3</a>
+                    <div style="font-size:0.7rem; color:#8899a6; margin-bottom:5px;">音軌已準備就緒</div>
+                    <a href="${dlUrl}" target="_blank" class="dl-btn">📥 安全下載 MP3</a>
                 `;
             } else {
-                item.innerHTML = `<div style="color:#ff4757; font-size:0.8rem;">⚠️ 網址格式不正確，請檢查。</div>`;
+                item.innerHTML = `<div style="color:#ff4757; font-size:0.8rem;">網址格式有誤</div>`;
             }
-            queue.appendChild(item);
+            display.appendChild(item);
         });
     }
 
-    function getYouTubeID(url) {
-        // 重新設計的「強效型」辨識邏輯
+    function getID(url) {
         url = url.trim();
         let id = '';
         if (url.includes('youtu.be/')) {
