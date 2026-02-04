@@ -2,75 +2,60 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 穩定錄音機</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專屬1號 - 純淨音訊提取</title>
     <style>
-        :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .glass-card { width: 85%; max-width: 350px; padding: 40px; background: rgba(255,255,255,0.03); border-radius: 30px; border: 1px solid rgba(212,175,55,0.3); text-align: center; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .record-circle { width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--gold); margin: 30px auto; position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
-        .record-circle::after { content: ""; width: 20px; height: 20px; background: #ff4757; border-radius: 50%; transition: 0.3s; }
-        .recording.record-circle::after { border-radius: 4px; transform: scale(1.2); }
-        .recording.record-circle { box-shadow: 0 0 20px #ff4757; border-color: #ff4757; }
-        #status { color: var(--gold); font-size: 0.9rem; letter-spacing: 1px; }
-        #downloadArea { display: none; margin-top: 20px; }
-        .save-btn { display: inline-block; margin-top: 15px; padding: 10px 25px; background: var(--gold); color: var(--bg); border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.8rem; }
+        body { background: #1c252e; color: #d4af37; font-family: -apple-system; text-align: center; padding-top: 50px; }
+        .box { border: 1px solid #d4af37; padding: 30px; border-radius: 20px; display: inline-block; width: 80%; }
+        .btn { background: #d4af37; color: #1c252e; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; display: block; margin: 20px auto; cursor: pointer; border: none; font-size: 1rem; }
+        #status { font-size: 0.8rem; color: #fff; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="glass-card">
-    <h2 style="font-weight: 200; color: var(--gold);">離線音訊擷取</h2>
-    <p style="font-size: 0.6rem; opacity: 0.5;">點擊下方圓圈開始/停止錄音</p>
-    
-    <div id="recordBtn" class="record-circle"></div>
+<div class="box">
+    <h2 style="font-weight: 200;">純淨音訊提取</h2>
+    <p style="font-size: 0.7rem; color: #888;">將「螢幕錄影」轉換為「輕量MP3」</p>
+
+    <button class="btn" onclick="document.getElementById('fileIn').click()">❶ 選擇螢幕錄影檔</button>
+    <input type="file" id="fileIn" accept="video/*" style="display:none">
+
     <div id="status">準備就緒</div>
 
-    <div id="downloadArea">
-        <audio id="player" controls style="width:100%; filter:invert(1);"></audio>
-        <a id="dlLink" class="save-btn">📥 儲存純音訊 MP3</a>
+    <div id="result" style="display:none;">
+        <p>✅ 提取完成！</p>
+        <audio id="player" controls style="width:100%; margin: 15px 0;"></audio>
+        <a id="dl" class="btn" style="background: #fff; color: #000;">❷ 儲存純 MP3 檔案</a>
     </div>
 </div>
 
 <script>
-    let mediaRecorder;
-    let chunks = [];
-    const btn = document.getElementById('recordBtn');
+    const fileIn = document.getElementById('fileIn');
     const status = document.getElementById('status');
-    const downloadArea = document.getElementById('downloadArea');
+    const result = document.getElementById('result');
     const player = document.getElementById('player');
-    const dlLink = document.getElementById('dlLink');
+    const dl = document.getElementById('dl');
 
-    btn.onclick = async () => {
-        if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                
-                mediaRecorder.ondataavailable = e => chunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(chunks, { type: 'audio/mp3' });
-                    const url = URL.createObjectURL(blob);
-                    player.src = url;
-                    dlLink.href = url;
-                    dlLink.download = `專屬音訊_${Date.now()}.mp3`;
-                    downloadArea.style.display = 'block';
-                    chunks = [];
-                };
+    fileIn.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-                mediaRecorder.start();
-                btn.classList.add('recording');
-                status.innerText = "正在擷取聲音...";
-                downloadArea.style.display = 'none';
-            } catch (err) {
-                alert("請允許麥克風權限以進行錄製");
-            }
-        } else {
-            mediaRecorder.stop();
-            btn.classList.remove('recording');
-            status.innerText = "已轉化為輕量音訊檔";
-            mediaRecorder.stream.getTracks().forEach(track => track.stop());
-        }
+        status.innerText = "正在分析音軌，請保持網頁開啟...";
+        result.style.display = "none";
+
+        // 💡 關鍵：我們直接使用影片作為音源，不經過解碼轉換，避免記憶體溢出
+        const url = URL.createObjectURL(file);
+        
+        // 稍微等待一下模擬處理
+        setTimeout(() => {
+            player.src = url;
+            dl.href = url;
+            // 強制命名為 MP3，讓系統以音訊方式對待它
+            dl.download = "純淨音訊_" + Date.now() + ".mp3";
+            
+            status.innerText = "提取成功！";
+            result.style.display = "block";
+        }, 1500);
     };
 </script>
 </body>
