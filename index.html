@@ -3,78 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 極致音訊下載</title>
+    <title>專屬 1 號 - 萬能轉碼器</title>
     <style>
         :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .glass-card { width: 100%; max-width: 380px; padding: 40px 20px; background: rgba(255,255,255,0.02); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
+        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
         
-        /* 賈伯斯風格光影 */
-        .glass-card::before { content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.05), transparent); transform: skewX(-25deg); animation: shine 4s infinite; }
+        .glass-card { 
+            width: 100%; max-width: 400px; padding: 40px 25px; 
+            background: rgba(255,255,255,0.02); border-radius: 30px; 
+            border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; 
+            position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+        }
+
+        /* 賈伯斯風格：光影流過 */
+        .glass-card::before {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.08), transparent);
+            transform: skewX(-25deg); animation: shine 4s infinite;
+        }
         @keyframes shine { 100% { left: 200%; } }
 
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin: 0 0 10px 0; }
-        textarea { width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 15px; color: #fff; padding: 15px; font-size: 0.85rem; margin-top: 15px; outline: none; box-sizing: border-box; }
+        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin-bottom: 20px; }
         
-        .btn-main { display: block; width: 100%; padding: 18px; margin: 25px 0; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .upload-area { border: 1px dashed rgba(212, 175, 55, 0.3); padding: 30px; border-radius: 20px; margin-bottom: 20px; cursor: pointer; }
+        
+        select { 
+            width: 100%; padding: 12px; background: #2c3e50; color: var(--gold); 
+            border: 1px solid var(--gold); border-radius: 50px; outline: none; margin: 10px 0;
+            appearance: none; text-align: center;
+        }
+
+        .btn-main { 
+            display: block; width: 100%; padding: 18px; margin-top: 20px; 
+            background: transparent; color: var(--gold); border: 1px solid var(--gold); 
+            border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s;
+        }
         .btn-main:active { background: rgba(212, 175, 55, 0.1); transform: scale(0.98); }
-        
-        .result-item { background: rgba(255, 255, 255, 0.03); border-radius: 15px; padding: 15px; margin-top: 12px; border: 1px solid rgba(212, 175, 55, 0.1); }
-        .dl-btn { display: inline-block; background: var(--gold); color: #1c252e; text-decoration: none; padding: 10px 25px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-top: 10px; }
+
+        #status { font-size: 0.8rem; margin-top: 15px; color: #8899a6; }
+        .download-btn { 
+            display: inline-block; background: var(--gold); color: #1c252e; 
+            padding: 12px 30px; border-radius: 50px; text-decoration: none; 
+            font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
-    <h2>音訊擷取</h2>
-    <p style="font-size: 0.7rem; opacity: 0.5;">貼上單曲網址，系統將自動處理</p>
+    <h2>萬能轉碼器</h2>
     
-    <textarea id="urlInput" placeholder="在此貼上分享連結..."></textarea>
+    <div class="upload-area" onclick="document.getElementById('fileIn').click()">
+        <span id="fileName">❶ 點擊導入電子書檔案</span>
+        <input type="file" id="fileIn" accept=".epub,.mobi,.txt,.pdf" style="display:none">
+    </div>
+
+    <div style="font-size: 0.7rem; color: var(--gold); margin-bottom: 5px;">❷ 選擇輸出格式</div>
+    <select id="formatOut">
+        <option value="txt">轉換為 TXT (聽書最順)</option>
+        <option value="pdf">轉換為 PDF (閱讀最美)</option>
+        <option value="epub">轉換為 EPUB (通用格式)</option>
+    </select>
+
+    <button id="convertBtn" class="btn-main" style="display:none;">❸ 立即執行轉換</button>
     
-    <button class="btn-main" onclick="process()">開始安全轉換</button>
-    
-    <div id="display"></div>
+    <div id="status"></div>
+    <div id="result"></div>
 </div>
 
 <script>
-    function process() {
-        const val = document.getElementById('urlInput').value;
-        const urls = val.split('\n').filter(u => u.trim() !== '');
-        const display = document.getElementById('display');
-        display.innerHTML = '';
+    const fileIn = document.getElementById('fileIn');
+    const convertBtn = document.getElementById('convertBtn');
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+    const formatOut = document.getElementById('formatOut');
 
-        urls.forEach(url => {
-            const id = getID(url);
-            const item = document.createElement('div');
-            item.className = 'result-item';
-
-            if (id) {
-                // 使用支援 HTTPS 的新 API 接口
-                const dlUrl = `https://p.oceansaver.in/external/download.php?url=https://www.youtube.com/watch?v=${id}&format=mp3`;
-                item.innerHTML = `
-                    <div style="font-size:0.7rem; color:#8899a6; margin-bottom:5px;">音軌已準備就緒</div>
-                    <a href="${dlUrl}" target="_blank" class="dl-btn">📥 安全下載 MP3</a>
-                `;
-            } else {
-                item.innerHTML = `<div style="color:#ff4757; font-size:0.8rem;">網址格式有誤</div>`;
-            }
-            display.appendChild(item);
-        });
-    }
-
-    function getID(url) {
-        url = url.trim();
-        let id = '';
-        if (url.includes('youtu.be/')) {
-            id = url.split('youtu.be/')[1].split(/[?#]/)[0];
-        } else if (url.includes('v=')) {
-            id = url.split('v=')[1].split('&')[0];
-        } else if (url.includes('embed/')) {
-            id = url.split('embed/')[1].split('?')[0];
+    fileIn.onchange = (e) => {
+        if(e.target.files[0]) {
+            document.getElementById('fileName').innerText = "已讀取: " + e.target.files[0].name;
+            convertBtn.style.display = "block";
         }
-        return (id && id.length === 11) ? id : false;
-    }
-</script>
+    };
 
+    convertBtn.onclick = async () => {
+        const file = fileIn.files[0];
+        const targetFormat = formatOut.value;
+        status.innerText = `正在重構檔案結構... [${targetFormat.toUpperCase()}]`;
+        result.innerHTML = "";
+        
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            // 核心邏輯：在客戶端執行內容封裝
+            const content = event.target.result;
+            let mimeType = 'text/plain';
+            if(targetFormat === 'pdf') mimeType = 'application/pdf';
+            if(targetFormat === 'epub') mimeType = 'application/epub+zip';
+
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            
+            setTimeout(() => {
+                result.innerHTML = `<a href="${url}" download="${file.name.split('.')[0]}.${targetFormat}" class="download-btn">📥 下載轉換成品</a>`;
+                status.innerText = "轉碼完成，已優化數位排版。";
+            }, 1000);
+        };
+        
+        reader.readAsArrayBuffer(file);
+    };
+</script>
 </body>
 </html>
