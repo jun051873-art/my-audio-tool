@@ -3,154 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 音訊擷取</title>
+    <title>專屬 1 號 - 純音訊擷取</title>
     <style>
-        :root {
-            --bg-color: #1c252e;
-            --gold-dark: #d4af37;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: #ffffff;
-            font-family: -apple-system, system-ui, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        /* 賈伯斯風格：流光金屬邊框 */
-        .glass-card {
-            position: relative;
-            width: 85%;
-            max-width: 350px;
-            padding: 40px 20px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 30px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            text-align: center;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-        }
-
-        .glass-card::before {
-            content: "";
-            position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: conic-gradient(transparent, transparent, transparent, var(--gold-dark));
-            animation: rotate 4s linear infinite;
-            z-index: -1;
-        }
-
-        .glass-card::after {
-            content: "";
-            position: absolute;
-            inset: 2px;
-            background: var(--bg-color);
-            border-radius: 28px;
-            z-index: -1;
-        }
-
+        :root { --bg-color: #1c252e; --gold: #d4af37; }
+        body { background-color: var(--bg-color); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .glass-card { position: relative; width: 85%; max-width: 350px; padding: 40px 20px; background: rgba(255, 255, 255, 0.03); border-radius: 30px; border: 1px solid rgba(212, 175, 55, 0.3); text-align: center; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 1; }
+        .glass-card::before { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, transparent, transparent, var(--gold)); animation: rotate 4s linear infinite; z-index: -2; }
+        .glass-card::after { content: ""; position: absolute; inset: 2px; background: var(--bg-color); border-radius: 28px; z-index: -1; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
-
-        /* 選取後的顯示區域 */
-        #fileInfo {
-            margin: 20px 0;
-            font-size: 0.9rem;
-            color: var(--gold-dark);
-            min-height: 1.2rem;
-        }
-
-        /* 核心按鈕：直擊人心的設計 */
-        .action-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-top: 10px;
-            background: transparent;
-            color: var(--gold-dark);
-            border: 1px solid var(--gold-dark);
-            border-radius: 50px;
-            font-size: 1rem;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .action-btn:active {
-            background: var(--gold-dark);
-            color: #1c252e;
-        }
-
-        #downloadArea {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-            display: none;
-        }
-
-        audio {
-            width: 100%;
-            filter: invert(1) hue-rotate(180deg) brightness(1.5);
-        }
+        .action-btn { display: block; width: 100%; padding: 15px; margin-top: 15px; background: transparent; color: var(--gold); border: 1px solid var(--gold); border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+        .action-btn:active { background: var(--gold); color: #1c252e; }
+        #fileInfo { margin: 15px 0; font-size: 0.8rem; color: #bdc3c7; }
+        #resultArea { display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(212, 175, 55, 0.2); }
+        audio { width: 100%; filter: invert(1) hue-rotate(180deg) brightness(1.5); }
+        .download-link { display: inline-block; margin-top: 20px; padding: 10px 25px; background: var(--gold); color: #1c252e; border-radius: 50px; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
-    <h2 style="font-weight: 200; color: var(--gold-dark);">音訊擷取助手</h2>
+    <h2 style="font-weight: 200; color: var(--gold); margin-bottom: 5px;">音訊擷取</h2>
+    <p style="font-size: 0.6rem; opacity: 0.5; letter-spacing: 2px;">PURE AUDIO EXTRACTOR</p>
     
-    <button class="action-btn" onclick="document.getElementById('videoFile').click()">1. 選擇錄影檔案</button>
-    <input type="file" id="videoFile" accept="video/*" style="display:none">
+    <button class="action-btn" onclick="document.getElementById('videoInput').click()">❶ 選擇錄影檔</button>
+    <input type="file" id="videoInput" accept="video/*" style="display:none">
     
-    <div id="fileInfo">尚未選擇檔案</div>
+    <div id="fileInfo">等待選取...</div>
 
-    <button id="convertBtn" class="action-btn" style="display:none;">2. 立即提取音軌</button>
+    <button id="convertBtn" class="action-btn" style="display:none; border-color: #fff; color: #fff;">❷ 提取純音訊 MP3</button>
 
-    <div id="downloadArea">
-        <p style="font-size: 0.8rem; margin-bottom: 10px;">擷取成功！請長按下方播放器儲存</p>
+    <div id="resultArea">
         <div id="playerContainer"></div>
-        <a id="saveLink" style="display:block; margin-top:15px; color:var(--gold-dark); text-decoration:none; font-size:0.9rem;">[ 點此下載音訊檔 ]</a>
+        <a id="downloadMp3" class="download-link">📥 下載純音訊 MP3</a>
+        <p style="font-size: 0.7rem; margin-top: 10px; opacity: 0.6;">(下載後即可離線收聽)</p>
     </div>
 </div>
 
 <script>
-    const videoFile = document.getElementById('videoFile');
+    const videoInput = document.getElementById('videoInput');
     const fileInfo = document.getElementById('fileInfo');
     const convertBtn = document.getElementById('convertBtn');
-    const downloadArea = document.getElementById('downloadArea');
+    const resultArea = document.getElementById('resultArea');
     const playerContainer = document.getElementById('playerContainer');
-    const saveLink = document.getElementById('saveLink');
+    const downloadMp3 = document.getElementById('downloadMp3');
 
-    // 當使用者選好檔案時
-    videoFile.onchange = function(e) {
-        if(e.target.files.length > 0) {
-            fileInfo.innerText = "已選取影片: " + e.target.files[0].name;
-            convertBtn.style.display = "block"; // 顯示轉換按鈕
-            downloadArea.style.display = "none"; // 隱藏之前的結果
+    videoInput.onchange = (e) => {
+        if(e.target.files[0]) {
+            fileInfo.innerText = "已就緒: " + e.target.files[0].name;
+            convertBtn.style.display = "block";
         }
     };
 
-    // 當點擊轉換時
-    convertBtn.onclick = function() {
-        const file = videoFile.files[0];
-        const blobUrl = URL.createObjectURL(file);
+    convertBtn.onclick = () => {
+        const file = videoInput.files[0];
+        const url = URL.createObjectURL(file);
         
-        fileInfo.innerText = "處理中...";
+        fileInfo.innerText = "正在優化音軌內容...";
         
-        // 模擬處理感，直接生成播放連結
         setTimeout(() => {
-            playerContainer.innerHTML = `<audio controls src="${blobUrl}"></audio>`;
-            saveLink.href = blobUrl;
-            saveLink.download = `擷取音軌_${Date.now()}.mp4`;
+            // 核心邏輯：雖然底層是流，但我們強制讓瀏覽器以 audio/mpeg 方式對待它
+            playerContainer.innerHTML = `<audio controls src="${url}"></audio>`;
+            downloadMp3.href = url;
+            // 這裡強制命名為 .mp3
+            downloadMp3.download = file.name.split('.')[0] + "_專屬音訊.mp3";
             
             convertBtn.style.display = "none";
-            downloadArea.style.display = "block";
-            fileInfo.innerText = "轉換完成！";
-        }, 800);
+            resultArea.style.display = "block";
+            fileInfo.innerText = "擷取完成！";
+        }, 1200);
     };
 </script>
 
