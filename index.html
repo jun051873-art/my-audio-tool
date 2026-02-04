@@ -3,114 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 萬能轉碼器</title>
+    <title>在幹嘛 1 號 - 記憶鎖定</title>
     <style>
-        :root { --bg: #1c252e; --gold: #d4af37; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        :root { --bg: #1c252e; --gold: #d4af37; --card-bg: #242f3a; }
+        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         
+        /* 賈伯斯美學：金絲流光邊框 */
         .glass-card { 
-            width: 100%; max-width: 400px; padding: 40px 25px; 
-            background: rgba(255,255,255,0.02); border-radius: 30px; 
-            border: 1px solid rgba(212, 175, 55, 0.4); text-align: center; 
-            position: relative; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
+            width: 85%; max-width: 350px; padding: 30px 20px; 
+            background: var(--card-bg); border-radius: 25px; 
+            border: 1px solid rgba(212, 175, 55, 0.4); 
+            text-align: center; position: relative; overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        /* 賈伯斯風格：光影流過 */
         .glass-card::before {
             content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.08), transparent);
+            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
             transform: skewX(-25deg); animation: shine 4s infinite;
         }
         @keyframes shine { 100% { left: 200%; } }
 
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 4px; margin-bottom: 20px; }
+        h2 { font-weight: 200; color: var(--gold); letter-spacing: 3px; margin-bottom: 25px; }
+
+        .tag-container { display: flex; flex-direction: column; gap: 15px; }
         
-        .upload-area { border: 1px dashed rgba(212, 175, 55, 0.3); padding: 30px; border-radius: 20px; margin-bottom: 20px; cursor: pointer; }
-        
-        select { 
-            width: 100%; padding: 12px; background: #2c3e50; color: var(--gold); 
-            border: 1px solid var(--gold); border-radius: 50px; outline: none; margin: 10px 0;
-            appearance: none; text-align: center;
+        .tag-row {
+            display: flex; align-items: center; background: rgba(0,0,0,0.2);
+            padding: 10px 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.15);
         }
 
-        .btn-main { 
-            display: block; width: 100%; padding: 18px; margin-top: 20px; 
-            background: transparent; color: var(--gold); border: 1px solid var(--gold); 
-            border-radius: 50px; font-size: 1rem; cursor: pointer; transition: 0.3s;
+        .tag-label { font-size: 0.8rem; color: var(--gold); width: 60px; text-align: left; }
+        
+        /* 輸入框：簡單、無邊框感 */
+        input {
+            flex: 1; background: transparent; border: none; color: #fff;
+            font-size: 1rem; outline: none; padding: 5px;
         }
-        .btn-main:active { background: rgba(212, 175, 55, 0.1); transform: scale(0.98); }
 
-        #status { font-size: 0.8rem; margin-top: 15px; color: #8899a6; }
-        .download-btn { 
-            display: inline-block; background: var(--gold); color: #1c252e; 
-            padding: 12px 30px; border-radius: 50px; text-decoration: none; 
-            font-weight: bold; margin-top: 20px; animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .save-status { font-size: 0.6rem; color: #8899a6; margin-top: 20px; height: 12px; }
     </style>
 </head>
 <body>
 
 <div class="glass-card">
-    <h2>萬能轉碼器</h2>
+    <h2>在幹嘛 1 號</h2>
     
-    <div class="upload-area" onclick="document.getElementById('fileIn').click()">
-        <span id="fileName">❶ 點擊導入電子書檔案</span>
-        <input type="file" id="fileIn" accept=".epub,.mobi,.txt,.pdf" style="display:none">
+    <div class="tag-container">
+        <div class="tag-row">
+            <div class="tag-label">狀態：</div>
+            <input type="text" id="tag1" placeholder="輸入目前狀態..." oninput="saveData()">
+        </div>
+        <div class="tag-row">
+            <div class="tag-label">心情：</div>
+            <input type="text" id="tag2" placeholder="輸入目前心情..." oninput="saveData()">
+        </div>
+        <div class="tag-row">
+            <div class="tag-label">目標：</div>
+            <input type="text" id="tag3" placeholder="輸入今日目標..." oninput="saveData()">
+        </div>
     </div>
 
-    <div style="font-size: 0.7rem; color: var(--gold); margin-bottom: 5px;">❷ 選擇輸出格式</div>
-    <select id="formatOut">
-        <option value="txt">轉換為 TXT (聽書最順)</option>
-        <option value="pdf">轉換為 PDF (閱讀最美)</option>
-        <option value="epub">轉換為 EPUB (通用格式)</option>
-    </select>
-
-    <button id="convertBtn" class="btn-main" style="display:none;">❸ 立即執行轉換</button>
-    
-    <div id="status"></div>
-    <div id="result"></div>
+    <div id="saveStatus" class="save-status"></div>
 </div>
 
 <script>
-    const fileIn = document.getElementById('fileIn');
-    const convertBtn = document.getElementById('convertBtn');
-    const status = document.getElementById('status');
-    const result = document.getElementById('result');
-    const formatOut = document.getElementById('formatOut');
-
-    fileIn.onchange = (e) => {
-        if(e.target.files[0]) {
-            document.getElementById('fileName').innerText = "已讀取: " + e.target.files[0].name;
-            convertBtn.style.display = "block";
+    // 頁面載入時：讀取記憶
+    window.onload = () => {
+        for (let i = 1; i <= 3; i++) {
+            const savedValue = localStorage.getItem('tag' + i);
+            if (savedValue) {
+                document.getElementById('tag' + i).value = savedValue;
+            }
         }
     };
 
-    convertBtn.onclick = async () => {
-        const file = fileIn.files[0];
-        const targetFormat = formatOut.value;
-        status.innerText = `正在重構檔案結構... [${targetFormat.toUpperCase()}]`;
-        result.innerHTML = "";
+    // 輸入時自動存檔：即時、無感
+    function saveData() {
+        for (let i = 1; i <= 3; i++) {
+            const value = document.getElementById('tag' + i).value;
+            localStorage.setItem('tag' + i, value);
+        }
         
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            // 核心邏輯：在客戶端執行內容封裝
-            const content = event.target.result;
-            let mimeType = 'text/plain';
-            if(targetFormat === 'pdf') mimeType = 'application/pdf';
-            if(targetFormat === 'epub') mimeType = 'application/epub+zip';
-
-            const blob = new Blob([content], { type: mimeType });
-            const url = URL.createObjectURL(blob);
-            
-            setTimeout(() => {
-                result.innerHTML = `<a href="${url}" download="${file.name.split('.')[0]}.${targetFormat}" class="download-btn">📥 下載轉換成品</a>`;
-                status.innerText = "轉碼完成，已優化數位排版。";
-            }, 1000);
-        };
-        
-        reader.readAsArrayBuffer(file);
-    };
+        const status = document.getElementById('saveStatus');
+        status.innerText = "已自動鎖定最新記憶";
+        setTimeout(() => { status.innerText = ""; }, 1500);
+    }
 </script>
+
 </body>
 </html>
