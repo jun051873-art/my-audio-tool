@@ -1,92 +1,157 @@
-<div id="playerPage" class="page">
-    <div class="glass-card">
-        <h2>專屬音訊播放</h2>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>專屬 1 號 - 直觀播放</title>
+    <style>
+        :root { --bg: #1c252e; --gold: #d4af37; --card-bg: #242f3a; }
         
-        <div id="recordDisk" class="disk">
-            <div class="disk-inner"></div>
-        </div>
+        body { 
+            background-color: var(--bg); 
+            color: #fff; 
+            font-family: -apple-system, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
 
-        <div id="trackName" style="font-size: 0.9rem; color: var(--gold); margin: 20px 0 10px;">尚未選取曲目</div>
+        /* 賈伯斯美學：金絲流光大卡片 */
+        .glass-card { 
+            width: 90%; 
+            max-width: 400px; 
+            padding: 40px 20px; 
+            background: var(--card-bg); 
+            border-radius: 40px; 
+            border: 1px solid rgba(212, 175, 55, 0.4); 
+            text-align: center; 
+            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+            position: relative;
+        }
 
-        <audio id="mainAudio" style="display:none;"></audio>
+        /* 標題與曲目：字體放大、清晰 */
+        h2 { font-weight: 300; font-size: 1.8rem; color: var(--gold); margin: 0 0 10px 0; letter-spacing: 5px; }
+        #trackName { font-size: 1.2rem; color: #fff; margin-bottom: 30px; opacity: 0.8; height: 1.5rem; overflow: hidden; }
+
+        /* 大型播放圓環 */
+        .disk-container {
+            width: 220px; height: 220px; 
+            margin: 0 auto 40px;
+            border-radius: 50%;
+            border: 1px solid var(--gold);
+            display: flex; justify-content: center; align-items: center;
+            background: radial-gradient(circle, #2c3e50, #1c252e);
+            box-shadow: 0 0 50px rgba(0,0,0,0.3);
+            position: relative;
+        }
         
-        <div class="progress-container" onclick="setProgress(event)">
-            <div id="progressBar" class="progress-bar"></div>
-        </div>
+        .disk-inner { width: 50px; height: 50px; border-radius: 50%; background: var(--bg); border: 1px solid var(--gold); }
 
-        <div class="controls">
-            <button class="ctrl-btn" onclick="togglePlay()" id="playBtn">▶</button>
-        </div>
+        /* 進度條：變粗更直觀 */
+        .progress-box { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 40px; cursor: pointer; }
+        #progressBar { width: 0%; height: 100%; background: var(--gold); border-radius: 10px; transition: width 0.1s linear; }
 
-        <button class="btn" style="margin-top:30px; border-style:dashed; opacity:0.6;" onclick="document.getElementById('audioIn').click()">
-            ❶ 導入音樂檔案
-        </button>
-        <input type="file" id="audioIn" accept="audio/*" style="display:none" onchange="loadMusic(event)">
+        /* 核心按鈕：極大化、操作直觀 */
+        .main-btn {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            border: 2px solid var(--gold);
+            background: transparent;
+            color: var(--gold);
+            font-size: 2.5rem;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto;
+        }
+        .main-btn:active { transform: scale(0.9); background: rgba(212, 175, 55, 0.1); }
+
+        /* 檔案選擇：大方、隱藏雜訊 */
+        .file-label {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 35px;
+            border: 1px dashed var(--gold);
+            border-radius: 50px;
+            color: var(--gold);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="glass-card">
+    <h2>專屬 1 號</h2>
+    <div id="trackName">等待選取音樂</div>
+
+    <div class="disk-container" id="disk">
+        <div class="disk-inner"></div>
     </div>
+
+    <div class="progress-box" onclick="seek(event)">
+        <div id="progressBar"></div>
+    </div>
+
+    <button class="main-btn" id="playBtn" onclick="togglePlay()">▶</button>
+
+    <label class="file-label">
+        ❶ 點選音樂檔案 (MP3)
+        <input type="file" id="audioFile" accept="audio/mp3" style="display:none" onchange="loadMusic(event)">
+    </label>
+
+    <audio id="audioPlayer"></audio>
 </div>
 
-<style>
-    /* 唱片旋轉動畫 */
-    .disk {
-        width: 180px; height: 180px; border-radius: 50%;
-        border: 2px solid var(--gold); margin: 0 auto;
-        display: flex; justify-content: center; align-items: center;
-        background: radial-gradient(circle, #34495e 30%, #1c252e 100%);
-        box-shadow: 0 0 30px rgba(0,0,0,0.5);
-        transition: transform 0.5s ease;
-    }
-    .disk.playing { animation: rotateDisk 10s linear infinite; }
-    @keyframes rotateDisk { 100% { transform: rotate(360deg); } }
-    
-    .disk-inner { width: 40px; height: 40px; border-radius: 50%; background: var(--bg); border: 1px solid var(--gold); }
-
-    .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; margin-top: 20px; }
-    .progress-bar { width: 0%; height: 100%; background: var(--gold); border-radius: 2px; }
-
-    .controls { margin-top: 25px; }
-    .ctrl-btn { 
-        width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--gold);
-        background: transparent; color: var(--gold); font-size: 1.5rem; cursor: pointer;
-    }
-</style>
-
 <script>
-    const audio = document.getElementById('mainAudio');
+    const player = document.getElementById('audioPlayer');
     const playBtn = document.getElementById('playBtn');
-    const disk = document.getElementById('recordDisk');
     const progressBar = document.getElementById('progressBar');
+    const trackName = document.getElementById('trackName');
+    const disk = document.getElementById('disk');
 
     function loadMusic(e) {
         const file = e.target.files[0];
-        if(!file) return;
-        const url = URL.createObjectURL(file);
-        audio.src = url;
-        document.getElementById('trackName').innerText = file.name;
-        audio.play();
+        if (!file) return;
+        
+        trackName.innerText = file.name;
+        player.src = URL.createObjectURL(file);
+        player.play();
         playBtn.innerText = "⏸";
-        disk.classList.add('playing');
+        disk.style.animation = "rotate 10s linear infinite";
     }
 
     function togglePlay() {
-        if(audio.paused) {
-            audio.play();
+        if (player.paused) {
+            player.play();
             playBtn.innerText = "⏸";
-            disk.classList.add('playing');
+            disk.style.animationPlayState = "running";
         } else {
-            audio.pause();
+            player.pause();
             playBtn.innerText = "▶";
-            disk.classList.remove('playing');
+            disk.style.animationPlayState = "paused";
         }
     }
 
-    audio.ontimeupdate = () => {
-        const per = (audio.currentTime / audio.duration) * 100;
-        progressBar.style.width = per + "%";
+    player.ontimeupdate = () => {
+        const percent = (player.currentTime / player.duration) * 100;
+        progressBar.style.width = percent + "%";
     };
 
-    function setProgress(e) {
+    function seek(e) {
         const width = e.target.clientWidth;
-        const clickX = e.offsetX;
-        audio.currentTime = (clickX / width) * audio.duration;
+        const x = e.offsetX;
+        player.currentTime = (x / width) * player.duration;
     }
 </script>
+
+<style>
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+</body>
+</html>
