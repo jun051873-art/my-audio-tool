@@ -3,121 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 功能全開版</title>
+    <title>專屬 1 號 - 旗艦系統</title>
     <style>
-        :root { --bg: #1a1c1e; --gold: #d4af37; --card-bg: rgba(30, 32, 35, 0.9); }
-        body { background: var(--bg); color: #fff; font-family: -apple-system; margin: 0; padding: 20px 20px 100px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-
-        /* 金絲流光與玻璃擬態 */
-        .glass-card {
-            background: var(--card-bg); border-radius: 35px; border: 1px solid rgba(212, 175, 55, 0.3);
-            backdrop-filter: blur(20px); padding: 25px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
-            width: 100%; max-width: 400px; margin-bottom: 20px; position: relative; overflow: hidden;
-        }
-
-        /* 封面區域 */
-        .album-box { width: 180px; height: 180px; margin: 0 auto 20px; border-radius: 20px; background: url('https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=500') center/cover; border: 1px solid var(--gold); }
+        :root { --bg: #1a1c1e; --gold: #d4af37; --card: rgba(30, 32, 35, 0.95); }
+        body { background: var(--bg); color: #fff; font-family: -apple-system; margin: 0; overflow: hidden; }
         
-        /* 標題與字體 */
-        h2 { font-weight: 200; color: var(--gold); font-size: 1.2rem; margin: 0 0 20px; letter-spacing: 3px; }
-        .label-text { color: #8899a6; font-size: 0.85rem; }
+        /* 頁面切換控制 */
+        .page { display: none; height: calc(100vh - 80px); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 功能項次佈局 */
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-        /* 金屬質感開關 */
-        .switch { width: 46px; height: 24px; background: #333; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
-        .switch.on { background: var(--gold); }
-        .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.3s; }
-        .switch.on::after { left: 24px; }
-
-        /* 滑桿樣式 */
-        input[type=range] { width: 100px; accent-color: var(--gold); }
+        /* 賈伯斯美學：金絲玻璃卡片 */
+        .glass-card { background: var(--card); border-radius: 35px; border: 1px solid rgba(212, 175, 55, 0.3); padding: 25px; backdrop-filter: blur(20px); position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        /* 動態流光效果 (設定頁開啟時觸發) */
+        .flow-effect::before { content: ""; position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent); transform: skewX(-20deg); animation: shine 6s infinite linear; }
+        @keyframes shine { 0% { left: -150%; } 100% { left: 150%; } }
 
         /* 底部導覽列 */
-        .nav-bar {
-            position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(26, 28, 30, 0.95);
-            backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center;
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
-        }
-        .nav-item { text-align: center; color: #555; font-size: 0.65rem; }
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(26,28,30,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(212,175,55,0.2); }
+        .nav-item { text-align: center; color: #555; font-size: 0.7rem; transition: 0.3s; }
         .nav-item.active { color: var(--gold); }
+        .nav-icon { font-size: 1.6rem; margin-bottom: 4px; }
+
+        /* 播放頁元素 */
+        .album-art { width: 220px; height: 220px; margin: 0 auto 25px; border-radius: 25px; background: #222; border: 1px solid var(--gold); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+        .ctrl-btn { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; }
+        .play-main { font-size: 3rem; margin: 0 20px; }
+
+        /* 歌單與設定項次 */
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .switch { width: 44px; height: 24px; background: #333; border-radius: 20px; position: relative; }
+        .switch.on { background: var(--gold); }
+        .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.2s; }
+        .switch.on::after { left: 22px; }
     </style>
 </head>
 <body>
 
-    <div class="glass-card">
-        <h2>正在播放</h2>
-        <div class="album-box"></div>
-        <div id="trackTitle" style="font-size: 1.1rem; margin-bottom: 5px;">專屬空間 - 靈魂頻率</div>
-        <div class="label-text"># 聽書模式啟動中</div>
-        
-        <div style="margin-top: 20px;">
-            <input type="range" style="width: 100%;" id="mainProgress">
-            <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                <span style="font-size: 1.5rem; color: var(--gold);">⏮</span>
-                <span style="font-size: 2.5rem; color: var(--gold);" id="playBtn">⏸</span>
-                <span style="font-size: 1.5rem; color: var(--gold);">⏭</span>
+    <div id="playPage" class="page active">
+        <div class="glass-card" style="text-align: center;">
+            <div id="albumCover" class="album-art"></div>
+            <h2 id="nowPlaying" style="font-weight: 200; margin-bottom: 5px;">尚未播放</h2>
+            <div style="color: #8899a6; font-size: 0.8rem; margin-bottom: 25px;">專屬空間 - 旗艦聽書</div>
+            
+            <input type="range" style="width: 100%; accent-color: var(--gold);" id="pBar">
+            
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 30px;">
+                <button class="ctrl-btn" onclick="toggleLoop()">🔁</button>
+                <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
+                <button class="ctrl-btn play-main" id="playBtn" onclick="togglePlay()">▶</button>
+                <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
+                <button class="ctrl-btn" id="timerDisplay" onclick="resetTimer()">⏳</button>
             </div>
         </div>
     </div>
 
-    <div class="glass-card">
-        <h2>設定中心</h2>
-        
-        <div class="setting-row">
-            <span class="label-text">單曲循環模式</span>
-            <div class="switch on" onclick="toggle(this)"></div>
-        </div>
-
-        <div class="setting-row">
-            <span class="label-text">睡眠定時 (分)</span>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span id="timerVal" style="color:var(--gold); font-size:0.8rem;">30</span>
-                <input type="range" min="0" max="120" value="30" oninput="updateTimer(this.value)">
+    <div id="listPage" class="page">
+        <div class="glass-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-weight: 200; color: var(--gold); margin: 0;">我的音樂庫</h2>
+                <label style="color: var(--gold); border: 1px solid var(--gold); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem;">
+                    匯入 MP3 <input type="file" multiple accept="audio/*" style="display:none" onchange="importMusic(event)">
+                </label>
             </div>
+            <div id="musicList"></div>
         </div>
+    </div>
 
-        <div class="setting-row">
-            <span class="label-text">流光邊框特效</span>
-            <div class="switch on" id="flowSwitch" onclick="toggle(this)"></div>
-        </div>
-
-        <div class="setting-row">
-            <span class="label-text">導入本機歌單</span>
-            <span style="color:var(--gold); font-size:1.2rem;" onclick="alert('請點選左側面板導入')">📂</span>
-        </div>
-
-        <div class="setting-row">
-            <span class="label-text">自動清除快取</span>
-            <div class="switch" onclick="toggle(this)"></div>
+    <div id="setPage" class="page">
+        <div class="glass-card flow-effect">
+            <h2 style="font-weight: 200; color: var(--gold); margin-bottom: 25px;">系統設定</h2>
+            <div class="item-row"><span>封面流光特效</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="item-row"><span>睡眠定時 (分)</span><input type="number" id="tInput" value="30" style="width:50px; background:none; border:1px solid var(--gold); color:#fff; text-align:center;"></div>
+            <div class="item-row"><span>單曲循環</span><div class="switch" onclick="this.classList.toggle('on')"></div></div>
+            <div class="item-row"><span>自動清除快取</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item"><div style="font-size:1.5rem;">🏠</div>首頁</div>
-        <div class="nav-item active"><div style="font-size:1.5rem;">📻</div>聽書</div>
-        <div class="nav-item"><div style="font-size:1.5rem;">⚙️</div>設定</div>
+        <div class="nav-item active" id="n1" onclick="showP('playPage','n1')"><div class="nav-icon">▶️</div>播放</div>
+        <div class="nav-item" id="n2" onclick="showP('listPage','n2')"><div class="nav-icon">📂</div>歌單</div>
+        <div class="nav-item" id="n3" onclick="showP('setPage','n3')"><div class="nav-icon">⚙️</div>設定</div>
     </div>
 
 <script>
-    function toggle(el) {
-        el.classList.toggle('on');
-        // 如果是流光開關，可以連動背景動畫
-        if(el.id === 'flowSwitch') {
-            document.body.style.animation = el.classList.contains('on') ? '' : 'none';
-        }
+    let tracks = [];
+    let curIdx = 0;
+    const player = new Audio();
+
+    function showP(pId, nId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(pId).classList.add('active');
+        document.getElementById(nId).classList.add('active');
     }
 
-    function updateTimer(val) {
-        document.getElementById('timerVal').innerText = val == 0 ? "關閉" : val;
+    function importMusic(e) {
+        const files = Array.from(e.target.files);
+        files.forEach(f => tracks.push({ name: f.name, url: URL.createObjectURL(f) }));
+        renderList();
     }
 
-    // 播放按鈕簡單互動
-    document.getElementById('playBtn').onclick = function() {
-        this.innerText = this.innerText === '⏸' ? '▶' : '⏸';
-    };
+    function renderList() {
+        const list = document.getElementById('musicList');
+        list.innerHTML = tracks.map((t, i) => `
+            <div class="item-row" onclick="playTrack(${i})">
+                <span style="font-size:0.9rem;">${t.name}</span>
+                <span style="color:var(--gold);">▶</span>
+            </div>
+        `).join('');
+    }
+
+    function playTrack(i) {
+        curIdx = i;
+        player.src = tracks[i].url;
+        document.getElementById('nowPlaying').innerText = tracks[i].name;
+        player.play();
+        document.getElementById('playBtn').innerText = "⏸";
+        showP('playPage', 'n1');
+    }
+
+    function togglePlay() {
+        if(player.paused) { player.play(); document.getElementById('playBtn').innerText = "⏸"; }
+        else { player.pause(); document.getElementById('playBtn').innerText = "▶"; }
+    }
+    // 更多切換、定時邏輯可依此類推擴充...
 </script>
-
 </body>
 </html>
