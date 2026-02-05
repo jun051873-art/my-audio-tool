@@ -3,132 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬 1 號 - 旗艦系統</title>
+    <title>專屬 1 號 - 極致雙頁版</title>
     <style>
-        :root { --bg: #1a1c1e; --gold: #d4af37; --card: rgba(30, 32, 35, 0.95); }
+        :root { --bg: #1c252e; --gold: #d4af37; --card: rgba(36, 47, 58, 0.95); }
         body { background: var(--bg); color: #fff; font-family: -apple-system; margin: 0; overflow: hidden; }
         
-        /* 頁面切換控制 */
         .page { display: none; height: calc(100vh - 80px); padding: 25px; box-sizing: border-box; overflow-y: auto; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 賈伯斯美學：金絲玻璃卡片 */
-        .glass-card { background: var(--card); border-radius: 35px; border: 1px solid rgba(212, 175, 55, 0.3); padding: 25px; backdrop-filter: blur(20px); position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .glass-card { 
+            background: var(--card); border-radius: 40px; border: 1px solid rgba(212, 175, 55, 0.3); 
+            padding: 30px; backdrop-filter: blur(20px); position: relative; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        /* 播放頁元素：字體大方直觀 */
+        .album-art { width: 200px; height: 200px; margin: 0 auto 20px; border-radius: 30px; border: 1px solid var(--gold); background: #222; }
+        .track-info { font-size: 1.4rem; font-weight: 300; margin-bottom: 5px; color: #fff; }
+        .mode-text, .timer-text { font-size: 1rem; color: var(--gold); margin-top: 20px; cursor: pointer; letter-spacing: 2px; }
         
-        /* 動態流光效果 (設定頁開啟時觸發) */
-        .flow-effect::before { content: ""; position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent); transform: skewX(-20deg); animation: shine 6s infinite linear; }
-        @keyframes shine { 0% { left: -150%; } 100% { left: 150%; } }
+        /* 控制鈕 */
+        .play-btn { font-size: 3rem; color: var(--gold); background: none; border: none; margin: 20px 0; }
 
-        /* 底部導覽列 */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(26,28,30,0.95); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(212,175,55,0.2); }
-        .nav-item { text-align: center; color: #555; font-size: 0.7rem; transition: 0.3s; }
+        /* 歌單頁：分類與匯入 */
+        .category-tab { display: inline-block; padding: 8px 15px; border: 1px solid var(--gold); border-radius: 50px; margin: 5px; font-size: 0.8rem; }
+        .music-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* 底部導覽 */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 80px; background: rgba(28,37,46,0.98); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid rgba(212,175,55,0.2); }
+        .nav-item { color: #555; text-align: center; font-size: 0.8rem; }
         .nav-item.active { color: var(--gold); }
-        .nav-icon { font-size: 1.6rem; margin-bottom: 4px; }
-
-        /* 播放頁元素 */
-        .album-art { width: 220px; height: 220px; margin: 0 auto 25px; border-radius: 25px; background: #222; border: 1px solid var(--gold); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
-        .ctrl-btn { background: transparent; border: none; color: var(--gold); font-size: 1.5rem; }
-        .play-main { font-size: 3rem; margin: 0 20px; }
-
-        /* 歌單與設定項次 */
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .switch { width: 44px; height: 24px; background: #333; border-radius: 20px; position: relative; }
-        .switch.on { background: var(--gold); }
-        .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: 0.2s; }
-        .switch.on::after { left: 22px; }
     </style>
 </head>
 <body>
 
     <div id="playPage" class="page active">
         <div class="glass-card" style="text-align: center;">
-            <div id="albumCover" class="album-art"></div>
-            <h2 id="nowPlaying" style="font-weight: 200; margin-bottom: 5px;">尚未播放</h2>
-            <div style="color: #8899a6; font-size: 0.8rem; margin-bottom: 25px;">專屬空間 - 旗艦聽書</div>
+            <div class="album-art" id="art"></div>
+            <div class="track-info" id="curTitle">等待曲目</div>
+            <div style="color: #8899a6; font-size: 0.8rem;">Exclusive No.1 Player</div>
             
-            <input type="range" style="width: 100%; accent-color: var(--gold);" id="pBar">
+            <button class="play-btn" onclick="togglePlay()" id="playBtn">▶</button>
             
-            <div style="display: flex; justify-content: center; align-items: center; margin-top: 30px;">
-                <button class="ctrl-btn" onclick="toggleLoop()">🔁</button>
-                <button class="ctrl-btn" onclick="prevTrack()">⏮</button>
-                <button class="ctrl-btn play-main" id="playBtn" onclick="togglePlay()">▶</button>
-                <button class="ctrl-btn" onclick="nextTrack()">⏭</button>
-                <button class="ctrl-btn" id="timerDisplay" onclick="resetTimer()">⏳</button>
-            </div>
+            <div class="mode-text" id="modeBtn" onclick="changeMode()">模式：列表循環</div>
+            
+            <div class="timer-text" id="timerBtn" onclick="setSleepTimer()">定時：關閉</div>
         </div>
     </div>
 
     <div id="listPage" class="page">
         <div class="glass-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="font-weight: 200; color: var(--gold); margin: 0;">我的音樂庫</h2>
-                <label style="color: var(--gold); border: 1px solid var(--gold); padding: 5px 15px; border-radius: 50px; font-size: 0.8rem;">
-                    匯入 MP3 <input type="file" multiple accept="audio/*" style="display:none" onchange="importMusic(event)">
+            <h2 style="font-weight: 200; color: var(--gold);">歌單管理</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="background: var(--gold); color: #1c252e; padding: 10px 20px; border-radius: 50px; font-weight: bold; font-size: 0.9rem;">
+                    匯入本機 MP3 <input type="file" multiple accept="audio/*" style="display:none" onchange="importAudio(event)">
                 </label>
+                <button onclick="createCat()" style="background:none; border:1px solid var(--gold); color:var(--gold); padding:8px 15px; border-radius:50px; margin-left:10px;">+ 建立分類</button>
             </div>
-            <div id="musicList"></div>
-        </div>
-    </div>
 
-    <div id="setPage" class="page">
-        <div class="glass-card flow-effect">
-            <h2 style="font-weight: 200; color: var(--gold); margin-bottom: 25px;">系統設定</h2>
-            <div class="item-row"><span>封面流光特效</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
-            <div class="item-row"><span>睡眠定時 (分)</span><input type="number" id="tInput" value="30" style="width:50px; background:none; border:1px solid var(--gold); color:#fff; text-align:center;"></div>
-            <div class="item-row"><span>單曲循環</span><div class="switch" onclick="this.classList.toggle('on')"></div></div>
-            <div class="item-row"><span>自動清除快取</span><div class="switch on" onclick="this.classList.toggle('on')"></div></div>
+            <div id="catList" style="margin-bottom: 15px;"></div>
+            <div id="audioItems"></div>
         </div>
     </div>
 
     <div class="nav-bar">
-        <div class="nav-item active" id="n1" onclick="showP('playPage','n1')"><div class="nav-icon">▶️</div>播放</div>
-        <div class="nav-item" id="n2" onclick="showP('listPage','n2')"><div class="nav-icon">📂</div>歌單</div>
-        <div class="nav-item" id="n3" onclick="showP('setPage','n3')"><div class="nav-icon">⚙️</div>設定</div>
+        <div class="nav-item active" id="n1" onclick="switchPage('playPage','n1')"><div>🎵</div>播放</div>
+        <div class="nav-item" id="n2" onclick="switchPage('listPage','n2')"><div>📂</div>歌單</div>
     </div>
 
 <script>
-    let tracks = [];
-    let curIdx = 0;
+    let playlist = [];
+    let curIndex = 0;
+    let mode = 0; // 0: 列表, 1: 單曲, 2: 隨機
+    let timer = 0;
     const player = new Audio();
 
-    function showP(pId, nId) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(pId).classList.add('active');
-        document.getElementById(nId).classList.add('active');
+    function switchPage(p, n) {
+        document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(p).classList.add('active');
+        document.getElementById(n).classList.add('active');
     }
 
-    function importMusic(e) {
+    function importAudio(e) {
         const files = Array.from(e.target.files);
-        files.forEach(f => tracks.push({ name: f.name, url: URL.createObjectURL(f) }));
+        files.forEach(f => {
+            playlist.push({ name: f.name, url: URL.createObjectURL(f), cat: '全部' });
+        });
         renderList();
     }
 
     function renderList() {
-        const list = document.getElementById('musicList');
-        list.innerHTML = tracks.map((t, i) => `
-            <div class="item-row" onclick="playTrack(${i})">
-                <span style="font-size:0.9rem;">${t.name}</span>
+        const container = document.getElementById('audioItems');
+        container.innerHTML = playlist.map((t, i) => `
+            <div class="music-item" onclick="playMusic(${i})">
+                <span>${t.name}</span>
                 <span style="color:var(--gold);">▶</span>
             </div>
         `).join('');
     }
 
-    function playTrack(i) {
-        curIdx = i;
-        player.src = tracks[i].url;
-        document.getElementById('nowPlaying').innerText = tracks[i].name;
+    function playMusic(i) {
+        curIndex = i;
+        player.src = playlist[i].url;
+        document.getElementById('curTitle').innerText = playlist[i].name;
         player.play();
         document.getElementById('playBtn').innerText = "⏸";
-        showP('playPage', 'n1');
+        switchPage('playPage', 'n1');
     }
 
     function togglePlay() {
         if(player.paused) { player.play(); document.getElementById('playBtn').innerText = "⏸"; }
         else { player.pause(); document.getElementById('playBtn').innerText = "▶"; }
     }
-    // 更多切換、定時邏輯可依此類推擴充...
+
+    function changeMode() {
+        mode = (mode + 1) % 3;
+        const txt = ["模式：列表循環", "模式：單曲循環", "模式：隨機播放"];
+        document.getElementById('modeBtn').innerText = txt[mode];
+        player.loop = (mode === 1);
+    }
+
+    function setSleepTimer() {
+        const times = [0, 15, 30, 60, 90];
+        let cur = times.indexOf(timer);
+        timer = times[(cur + 1) % times.length];
+        document.getElementById('timerBtn').innerText = timer === 0 ? "定時：關閉" : `定時：${timer} 分鐘後關閉`;
+        
+        clearTimeout(window.sleepLog);
+        if(timer > 0) {
+            window.sleepLog = setTimeout(() => {
+                player.pause();
+                document.getElementById('playBtn').innerText = "▶";
+                alert("專屬 1 號：定時休息時間到");
+            }, timer * 60000);
+        }
+    }
+
+    function createCat() {
+        const name = prompt("請輸入新分類/歌單名稱：");
+        if(name) {
+            const btn = document.createElement('span');
+            btn.className = 'category-tab';
+            btn.innerText = name;
+            document.getElementById('catList').appendChild(btn);
+        }
+    }
+
+    player.onended = () => {
+        if(mode === 0) { curIndex = (curIndex + 1) % playlist.length; playMusic(curIndex); }
+        if(mode === 2) { curIndex = Math.floor(Math.random() * playlist.length); playMusic(curIndex); }
+    };
 </script>
 </body>
 </html>
