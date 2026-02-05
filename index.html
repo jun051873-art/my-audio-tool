@@ -1,95 +1,92 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>在幹嘛 1 號 - 記憶鎖定</title>
-    <style>
-        :root { --bg: #1c252e; --gold: #d4af37; --card-bg: #242f3a; }
-        body { background-color: var(--bg); color: #fff; font-family: -apple-system; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+<div id="playerPage" class="page">
+    <div class="glass-card">
+        <h2>專屬音訊播放</h2>
         
-        /* 賈伯斯美學：金絲流光邊框 */
-        .glass-card { 
-            width: 85%; max-width: 350px; padding: 30px 20px; 
-            background: var(--card-bg); border-radius: 25px; 
-            border: 1px solid rgba(212, 175, 55, 0.4); 
-            text-align: center; position: relative; overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-        }
+        <div id="recordDisk" class="disk">
+            <div class="disk-inner"></div>
+        </div>
 
-        .glass-card::before {
-            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.1), transparent);
-            transform: skewX(-25deg); animation: shine 4s infinite;
-        }
-        @keyframes shine { 100% { left: 200%; } }
+        <div id="trackName" style="font-size: 0.9rem; color: var(--gold); margin: 20px 0 10px;">尚未選取曲目</div>
 
-        h2 { font-weight: 200; color: var(--gold); letter-spacing: 3px; margin-bottom: 25px; }
-
-        .tag-container { display: flex; flex-direction: column; gap: 15px; }
+        <audio id="mainAudio" style="display:none;"></audio>
         
-        .tag-row {
-            display: flex; align-items: center; background: rgba(0,0,0,0.2);
-            padding: 10px 15px; border-radius: 15px; border: 1px solid rgba(212, 175, 55, 0.15);
-        }
-
-        .tag-label { font-size: 0.8rem; color: var(--gold); width: 60px; text-align: left; }
-        
-        /* 輸入框：簡單、無邊框感 */
-        input {
-            flex: 1; background: transparent; border: none; color: #fff;
-            font-size: 1rem; outline: none; padding: 5px;
-        }
-
-        .save-status { font-size: 0.6rem; color: #8899a6; margin-top: 20px; height: 12px; }
-    </style>
-</head>
-<body>
-
-<div class="glass-card">
-    <h2>在幹嘛 1 號</h2>
-    
-    <div class="tag-container">
-        <div class="tag-row">
-            <div class="tag-label">狀態：</div>
-            <input type="text" id="tag1" placeholder="輸入目前狀態..." oninput="saveData()">
+        <div class="progress-container" onclick="setProgress(event)">
+            <div id="progressBar" class="progress-bar"></div>
         </div>
-        <div class="tag-row">
-            <div class="tag-label">心情：</div>
-            <input type="text" id="tag2" placeholder="輸入目前心情..." oninput="saveData()">
+
+        <div class="controls">
+            <button class="ctrl-btn" onclick="togglePlay()" id="playBtn">▶</button>
         </div>
-        <div class="tag-row">
-            <div class="tag-label">目標：</div>
-            <input type="text" id="tag3" placeholder="輸入今日目標..." oninput="saveData()">
-        </div>
+
+        <button class="btn" style="margin-top:30px; border-style:dashed; opacity:0.6;" onclick="document.getElementById('audioIn').click()">
+            ❶ 導入音樂檔案
+        </button>
+        <input type="file" id="audioIn" accept="audio/*" style="display:none" onchange="loadMusic(event)">
     </div>
-
-    <div id="saveStatus" class="save-status"></div>
 </div>
 
+<style>
+    /* 唱片旋轉動畫 */
+    .disk {
+        width: 180px; height: 180px; border-radius: 50%;
+        border: 2px solid var(--gold); margin: 0 auto;
+        display: flex; justify-content: center; align-items: center;
+        background: radial-gradient(circle, #34495e 30%, #1c252e 100%);
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        transition: transform 0.5s ease;
+    }
+    .disk.playing { animation: rotateDisk 10s linear infinite; }
+    @keyframes rotateDisk { 100% { transform: rotate(360deg); } }
+    
+    .disk-inner { width: 40px; height: 40px; border-radius: 50%; background: var(--bg); border: 1px solid var(--gold); }
+
+    .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; cursor: pointer; margin-top: 20px; }
+    .progress-bar { width: 0%; height: 100%; background: var(--gold); border-radius: 2px; }
+
+    .controls { margin-top: 25px; }
+    .ctrl-btn { 
+        width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--gold);
+        background: transparent; color: var(--gold); font-size: 1.5rem; cursor: pointer;
+    }
+</style>
+
 <script>
-    // 頁面載入時：讀取記憶
-    window.onload = () => {
-        for (let i = 1; i <= 3; i++) {
-            const savedValue = localStorage.getItem('tag' + i);
-            if (savedValue) {
-                document.getElementById('tag' + i).value = savedValue;
-            }
+    const audio = document.getElementById('mainAudio');
+    const playBtn = document.getElementById('playBtn');
+    const disk = document.getElementById('recordDisk');
+    const progressBar = document.getElementById('progressBar');
+
+    function loadMusic(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const url = URL.createObjectURL(file);
+        audio.src = url;
+        document.getElementById('trackName').innerText = file.name;
+        audio.play();
+        playBtn.innerText = "⏸";
+        disk.classList.add('playing');
+    }
+
+    function togglePlay() {
+        if(audio.paused) {
+            audio.play();
+            playBtn.innerText = "⏸";
+            disk.classList.add('playing');
+        } else {
+            audio.pause();
+            playBtn.innerText = "▶";
+            disk.classList.remove('playing');
         }
+    }
+
+    audio.ontimeupdate = () => {
+        const per = (audio.currentTime / audio.duration) * 100;
+        progressBar.style.width = per + "%";
     };
 
-    // 輸入時自動存檔：即時、無感
-    function saveData() {
-        for (let i = 1; i <= 3; i++) {
-            const value = document.getElementById('tag' + i).value;
-            localStorage.setItem('tag' + i, value);
-        }
-        
-        const status = document.getElementById('saveStatus');
-        status.innerText = "已自動鎖定最新記憶";
-        setTimeout(() => { status.innerText = ""; }, 1500);
+    function setProgress(e) {
+        const width = e.target.clientWidth;
+        const clickX = e.offsetX;
+        audio.currentTime = (clickX / width) * audio.duration;
     }
 </script>
-
-</body>
-</html>
