@@ -6,82 +6,75 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="專屬1號">
-    <title>專屬1號 - Salon V299</title>
+    <title>專屬1號</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #000000; --gold: #D4AF37; --glass: rgba(255, 255, 255, 0.7); }
+        :root { --primary: #000; --gold: #D4AF37; --glass: rgba(255, 255, 255, 0.8); }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; background: #ffffff; position: fixed; color: var(--primary); }
+        html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; background: #fff; position: fixed; color: var(--primary); }
         body { font-family: 'Noto Sans TC', sans-serif; display: flex; flex-direction: column; }
 
-        /* 霧鏡玻璃效果 */
-        .glass-effect { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-bottom: 0.5px solid var(--gold); }
+        /* 標題與基礎毛玻璃 */
+        .header { padding: 60px 40px 20px; display: flex; justify-content: space-between; align-items: flex-end; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--gold); z-index: 1000; }
+        .glow-title { font-size: 2.2rem; font-weight: 900; letter-spacing: -2px; }
 
-        .glow-title { font-size: 2.2rem; font-weight: 900; letter-spacing: -2px; color: var(--primary); }
+        /* 全局金邊白底黑字按鈕 */
+        .luxe-btn { background: #fff; border: 1px solid var(--gold); border-radius: 40px; padding: 12px 25px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--primary); transition: 0.3s; }
+        .luxe-btn:active { transform: scale(0.95); background: #fdfaf0; }
 
-        .fab { position: fixed; bottom: 140px; right: 40px; width: 80px; height: 80px; background: #fff; border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 2.2rem; z-index: 3000; box-shadow: 0 10px 25px rgba(212,175,55,0.2); }
-
-        /* 按鈕風格：白底金邊黑字 */
-        .luxe-btn { background: #fff; border: 1px solid var(--gold); border-radius: 30px; padding: 12px 20px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--primary); font-size: 1rem; transition: 0.2s; }
-        .luxe-btn:active { background: #fdfaf0; transform: scale(0.97); }
-
-        .header { padding: 60px 40px 20px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 1000; }
         .content-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 200px; }
 
-        /* 月曆：金邊框白底 */
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin: 10px 30px; border-radius: 25px; overflow: hidden; border: 1px solid var(--gold); background: var(--gold); gap: 1px; }
-        .cal-day { background: #fff; min-height: 120px; padding: 12px; cursor: pointer; font-size: 1.3rem; position: relative; font-weight: 700; }
-        .cal-day.today-highlight { background: #fff9e6 !important; }
+        /* 鋼鐵金邊月曆 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin: 15px 30px; border-radius: 30px; overflow: hidden; border: 1px solid var(--gold); background: #fff; }
+        .cal-day { background: #fff; min-height: 110px; padding: 15px; cursor: pointer; border: 0.3px solid rgba(212, 175, 55, 0.2); font-size: 1.3rem; position: relative; font-weight: 700; }
+        .cal-day.today-highlight { background: rgba(212, 175, 55, 0.05) !important; }
 
-        /* 顧客/預約卡片：白底金邊 */
-        .item-card { border-radius: 25px; padding: 25px; background: #fff; border: 1px solid var(--gold); border-left: 10px solid var(--sty-color, #eee); margin: 0 30px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 8px; }
+        /* 項目卡片：白底金邊 */
+        .item-card { border-radius: 30px; padding: 25px; background: #fff; border: 1px solid var(--gold); border-left: 12px solid var(--sty-color, #eee); margin: 0 30px 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
 
-        /* 輸入框：白底金邊黑字 */
-        .pop-input { background: #ffffff !important; border: 1px solid var(--gold) !important; border-radius: 15px !important; padding: 12px 15px !important; font-size: 1.1rem !important; font-weight: 700 !important; width: 100% !important; color: #000 !important; }
-        .pop-label { font-size: 0.85rem; color: var(--gold); font-weight: 900; margin: 8px 0 4px 5px; }
-        
-        /* 導覽列：霧鏡 */
-        .nav { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; height: 90px; background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-radius: 45px; border: 1px solid var(--gold); z-index: 2000; }
+        /* 對話框輸入框：強制定義為白底金邊黑字 */
+        .pop-input { background: #fff !important; border: 1px solid var(--gold) !important; border-radius: 15px !important; padding: 12px !important; font-size: 1.1rem !important; color: #000 !important; font-weight: 700 !important; width: 100% !important; margin-top: 5px; }
+        .pop-label { font-size: 0.85rem; color: var(--gold); font-weight: 900; margin-left: 5px; }
+
+        .fab { position: fixed; bottom: 140px; right: 40px; width: 80px; height: 80px; background: #fff; border: 1px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 2.2rem; z-index: 3000; box-shadow: 0 8px 20px rgba(212,175,55,0.2); }
+
+        .nav { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 600px; height: 90px; background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-around; align-items: center; border-radius: 45px; border: 1px solid var(--gold); z-index: 2000; }
         .nav-item { text-align: center; color: #aaa; cursor: pointer; }
         .nav-item.active { color: var(--gold); font-weight: 900; }
         
         .page { display: none; width: 100%; height: 100%; flex-direction: column; }
         .page.active { display: flex; }
-
-        .swal-pill { border-radius: 30px !important; border: 1px solid var(--gold) !important; background: rgba(255,255,255,0.98) !important; backdrop-filter: blur(10px) !important; }
-        .tag-chip { display: inline-block; padding: 8px 15px; border-radius: 10px; border: 1px solid var(--gold); margin: 4px; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: var(--primary); }
+        .swal-pill { border-radius: 35px !important; border: 1px solid var(--gold) !important; background: #fff !important; }
+        .tag-chip { display: inline-block; padding: 8px 15px; border-radius: 12px; border: 1px solid var(--gold); margin: 5px; font-weight: 700; cursor: pointer; }
         .tag-chip.selected { background: var(--gold); color: #fff; }
-
-        /* 滾動條隱藏 */
-        .content-scroll::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
 <div id="pg-res" class="page active">
-    <div class="header glass-effect"><div class="glow-title">專屬空間</div><div style="display:flex; gap:10px;"><div class="luxe-btn" style="height:40px;" onclick="goToday()">今天</div><input type="month" id="m-picker" onchange="initMonth()" class="luxe-btn" style="width: 140px; height:40px;"></div></div>
+    <div class="header"><div class="glow-title">專屬空間</div><div style="display:flex; gap:10px;"><div class="luxe-btn" style="height:40px;" onclick="goToday()">今天</div><input type="month" id="m-picker" onchange="initMonth()" class="luxe-btn" style="width: 140px; height:40px;"></div></div>
     <div class="calendar-header" style="display:grid; grid-template-columns: repeat(7, 1fr); margin: 15px 30px 0; text-align: center; font-weight: 900; color: var(--gold);"><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div><div>日</div></div>
     <div class="content-scroll"><div id="cal-grid" class="calendar-grid"></div></div>
 </div>
 
 <div id="pg-cli" class="page">
-    <div class="header glass-effect"><div style="font-size: 2rem; font-weight: 900;">顧客</div><div style="display:flex; gap:10px;"><div class="luxe-btn" style="height:40px;" onclick="popCliSearch()"><i class="fas fa-search"></i></div><div class="luxe-btn" onclick="addCliTrig()" style="height:40px; font-size:1.4rem;">+</div></div></div>
+    <div class="header"><div style="font-size: 2rem; font-weight: 900;">顧客</div><div style="display:flex; gap:10px;"><div class="luxe-btn" style="height:40px;" onclick="popCliSearch()"><i class="fas fa-search"></i></div><div class="luxe-btn" onclick="addCliTrig()" style="height:40px; font-size:1.4rem;">+</div></div></div>
     <div class="content-scroll"><div id="cli-list"></div></div>
 </div>
 
 <div id="pg-set" class="page">
-    <div class="header glass-effect"><div style="font-size: 2rem; font-weight: 900;">設定</div></div>
+    <div class="header"><div style="font-size: 2rem; font-weight: 900;">設定</div></div>
     <div class="content-scroll" style="padding:0 30px;">
-        <div style="margin: 30px 0;"><p style="font-weight:900; color:var(--gold);">排休管理</p><div style="display:flex; gap:15px;"><div class="luxe-btn" onclick="pickOffMulti()">選擇日期</div><input type="color" id="off-c" onchange="store.offColor=this.value;saveS();initMonth();" style="width:50px;height:50px;border:1px solid var(--gold); border-radius:10px; background:none;"></div><div id="off-tags" style="margin-top:15px; display:flex; flex-wrap:wrap; gap:8px;"></div></div>
+        <div style="margin: 30px 0;"><p style="font-weight:900; color:var(--gold);">排休管理</p><div style="display:flex; gap:15px;"><div class="luxe-btn" onclick="pickOffMulti()">選擇日期</div><input type="color" id="off-c" onchange="store.offColor=this.value;saveS();initMonth();" style="width:50px;height:50px;border:1px solid var(--gold); border-radius:10px;"></div><div id="off-tags" style="margin-top:15px; display:flex; flex-wrap:wrap; gap:8px;"></div></div>
         <div style="margin-bottom:40px;"><p style="font-weight:900; color:var(--gold);">設計師</p><div id="s-sty-list"></div><div class="luxe-btn" style="margin-top:15px; width:100%;" onclick="addStyTrig()">+ 新增人員</div></div>
         <div style="margin-bottom:40px;"><p style="font-weight:900; color:var(--gold);">項目</p><div id="s-tag-list" style="display:flex; flex-wrap:wrap;"></div><div class="luxe-btn" style="margin-top:15px; width:100%;" onclick="addTagTrig()">+ 新增項目</div></div>
     </div>
 </div>
 
 <div id="pg-day" class="page">
-    <div class="header glass-effect"><div style="display:flex; align-items:center; gap:12px;"><i class="fas fa-chevron-left luxe-btn" style="border:none; color:var(--gold); font-size:1.5rem;" onclick="showP('pg-res')"></i><div id="day-title" style="font-weight:900; font-size:1.4rem;"></div></div><div style="display:flex; gap:8px;"><i class="fas fa-chevron-left luxe-btn" style="height:40px;" onclick="shiftDay(-1)"></i><i class="fas fa-chevron-right luxe-btn" style="height:40px;" onclick="shiftDay(1)"></i></div></div>
+    <div class="header"><div style="display:flex; align-items:center; gap:12px;"><i class="fas fa-chevron-left luxe-btn" style="border:none; color:var(--gold); font-size:1.5rem;" onclick="showP('pg-res')"></i><div id="day-title" style="font-weight:900; font-size:1.4rem;"></div></div><div style="display:flex; gap:8px;"><i class="fas fa-chevron-left luxe-btn" style="height:40px;" onclick="shiftDay(-1)"></i><i class="fas fa-chevron-right luxe-btn" style="height:40px;" onclick="shiftDay(1)"></i></div></div>
     <div class="content-scroll" id="day-lanes"></div>
 </div>
 
@@ -97,7 +90,7 @@
     let curD = new Date();
     let tempTags = [];
     let store = JSON.parse(localStorage.getItem('SALON_MASTER_FINAL_LOCK_V299')) || {
-        offColor: "#f2f2f7", stylists: [{id: 1, name: 'Tonny', color: '#000000'}, {id: 2, name: 'Apple', color: '#D4AF37'}],
+        offColor: "#f2f2f7", stylists: [{id: 1, name: 'Tonny', color: '#000'}, {id: 2, name: 'Apple', color: '#D4AF37'}],
         tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: []
     };
 
@@ -119,7 +112,7 @@
 
     async function confirmDel() {
         const res = await Swal.fire({
-            title: '確定刪除？', icon: 'warning', showCancelButton: true,
+            title: '確定刪除嗎？', icon: 'warning', showCancelButton: true,
             confirmButtonColor: '#D4AF37', cancelButtonColor: '#aaa', confirmButtonText: '確定', cancelButtonText: '取消',
             customClass: { popup: 'swal-pill' }
         });
@@ -130,7 +123,7 @@
         const apt = editId ? store.appointments.find(a => String(a.id) === String(editId)) : null;
         tempTags = apt ? [...apt.tags] : [];
         const { value: res } = await Swal.fire({
-            title: '預約', confirmButtonText: '確定', showCancelButton: true, cancelButtonText: '取消',
+            title: '預約', confirmButtonText: '確定', showCancelButton: true,
             customClass: { popup: 'swal-pill' },
             html: `
             <div style="text-align:left;">
@@ -140,7 +133,7 @@
                     <div style="border:1px solid var(--gold); border-radius:15px; padding:10px; display:flex; align-items:center; gap:5px; min-width:65px;">
                         <input type="checkbox" id="pop-sv" checked> <span style="font-size:0.8rem; font-weight:900;">存</span>
                     </div>
-                    <div id="pop-box" style="position:absolute; top:50px; width:100%; background:#fff; z-index:99; border:1px solid var(--gold); border-radius:15px; display:none; max-height:150px; overflow-y:auto;"></div>
+                    <div id="pop-box" style="position:absolute; top:55px; width:100%; background:#fff; z-index:99; border:1px solid var(--gold); border-radius:15px; display:none; max-height:150px; overflow-y:auto;"></div>
                 </div>
                 <div class="pop-label">電話</div><input id="pop-p" class="pop-input" value="${p}">
                 <div style="display:flex; gap:10px;">
@@ -148,11 +141,11 @@
                     <div style="flex:0.5;"><div class="pop-label">人數</div><input id="pop-c" type="number" class="pop-input" value="${apt?apt.count:1}"></div>
                 </div>
                 <div class="pop-label">項目</div>
-                <div class="luxe-btn" style="width:100%; height:45px;" onclick="document.getElementById('pop-tg').style.display=(document.getElementById('pop-tg').style.display==='none'?'block':'none')">選擇服務項目</div>
+                <div class="luxe-btn" style="width:100%; height:45px; border-radius:15px;" onclick="document.getElementById('pop-tg').style.display=(document.getElementById('pop-tg').style.display==='none'?'block':'none')">選擇服務項目</div>
                 <div id="pop-tg" style="display:none; margin-top:10px; border:1px solid var(--gold); padding:10px; border-radius:15px;">
                     ${store.tags.map(t=>`<div class="tag-chip ${tempTags.includes(t.name)?'selected':''}" onclick="this.classList.toggle('selected'); toggleTag('${t.name}')">${t.name}</div>`).join('')}
                 </div>
-                <div class="pop-label">金額與詳細備註</div>
+                <div class="pop-label">備註</div>
                 <textarea id="pop-amt" class="pop-input" style="height:80px; resize:none;">${apt?apt.note:''}</textarea>
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <input id="pop-d" class="pop-input" type="date" value="${apt?apt.date:curD.toLocaleDateString('sv')}">
@@ -183,7 +176,7 @@
         const ms = store.clients.filter(c => c.n.includes(val) || c.p.includes(val));
         if(ms.length) { 
             box.style.display='block'; 
-            box.innerHTML = ms.map(m => `<div style="padding:12px; border-bottom:1px solid #eee; font-weight:700;" onclick="pickSug('${m.n}', '${m.p}', '${m.lastSty}', '${boxId}')">${m.n} (${m.p})</div>`).join(''); 
+            box.innerHTML = ms.map(m => `<div style="padding:12px; border-bottom:1px solid rgba(212,175,55,0.1); font-weight:700;" onclick="pickSug('${m.n}', '${m.p}', '${m.lastSty}', '${boxId}')">${m.n} (${m.p})</div>`).join(''); 
         } else box.style.display='none';
     }
 
@@ -197,9 +190,9 @@
         const todaysApts = store.appointments.filter(a => a.date === ds);
         store.stylists.forEach(s => {
             const group = todaysApts.filter(a => String(a.styId) === String(s.id)).sort((a,b)=>a.time.localeCompare(b.time));
-            if(group.length > 0 || true) {
+            if(group.length > 0) {
                 const laneTitle = document.createElement('div');
-                laneTitle.style.cssText = `margin: 20px 30px 10px; font-weight:900; color:${s.color}; border-bottom:1px solid var(--gold);`;
+                laneTitle.style.cssText = `margin: 20px 30px 10px; font-weight:900; color:${s.color}; border-bottom:1px solid var(--gold); font-size:1.2rem;`;
                 laneTitle.innerText = s.name;
                 area.appendChild(laneTitle);
                 group.forEach(a => {
@@ -246,7 +239,7 @@
                         <i class="fas fa-trash" style="color:#ddd; font-size:1.3rem;" onclick="delCliWithConfirm('${c.n}')"></i>
                     </div>
                 </div>
-                <div class="luxe-btn" style="height:35px; margin-top:5px; font-size:0.9rem;" onclick="popBooking('${c.n}','${c.p}','${c.lastSty}')">快速預約</div>
+                <div class="luxe-btn" style="height:35px; margin-top:10px; font-size:0.9rem; width:100%; border-radius:15px;" onclick="popBooking('${c.n}','${c.p}','${c.lastSty}')">快速預約</div>
             `;
             area.appendChild(card);
         });
@@ -303,12 +296,12 @@
 
     async function pickOffMulti() {
         await Swal.fire({
-            title: '選擇排休', html: `<div id="sw-cal" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:2px; background:var(--gold); border:1px solid var(--gold);"></div>`,
+            title: '選擇排休', html: `<div id="sw-cal" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:1px; background:var(--gold); border:1px solid var(--gold);"></div>`,
             didOpen: () => {
                 const g = document.getElementById('sw-cal'), y = new Date().getFullYear(), m = new Date().getMonth();
                 const days = new Date(y, m+1, 0).getDate();
                 for(let d=1; d<=days; d++) {
-                    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
                     const el = document.createElement('div'); el.style.cssText="padding:10px; background:#fff; cursor:pointer; text-align:center; font-weight:700;";
                     el.innerText=d; if(store.offDays.includes(ds)) el.style.background = store.offColor;
                     el.onclick = () => {
