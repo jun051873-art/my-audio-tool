@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Salon V312 - 專屬1號時空對齊版</title>
+    <title>Salon V315 - 專屬1號大一統版</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,45 +14,34 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; background: #fff; position: fixed; }
         body { font-family: 'Noto Sans TC', sans-serif; color: var(--primary); display: flex; flex-direction: column; }
-
         .glow-title { font-size: 2.2rem; font-weight: 900; letter-spacing: -2px; background: linear-gradient(to right, #1d1d1f 20%, #D4AF37 40%, #D4AF37 60%, #1d1d1f 80%); background-size: 200% auto; background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shine 5s linear infinite; }
         @keyframes shine { to { background-position: 200% center; } }
-
         .fab { position: fixed; bottom: 130px; right: 35px; width: 75px; height: 75px; background: #fff; border: 2.5px solid var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 2rem; z-index: 3000; box-shadow: 0 15px 35px rgba(212,175,55,0.25); }
-
         .header { padding: 55px 35px 20px; display: flex; justify-content: space-between; align-items: flex-end; background: rgba(255,255,255,0.85); backdrop-filter: blur(35px); z-index: 1000; border-bottom: 0.5px solid rgba(0,0,0,0.05); }
         .content-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 180px; }
         .luxe-btn { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--luxe-border); border-radius: var(--round-pill); font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--primary); height: 52px; font-size: 1.1rem; }
-
-        /* 月曆鋼鐵格線 */
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin: 10px 35px; border-radius: 35px; overflow: hidden; background: #f2f2f7; border: 0.3px solid var(--gold); }
         .cal-day { background: #fff; min-height: 110px; padding: 12px; cursor: pointer; border: 0.3px solid rgba(212, 175, 55, 0.15); font-size: 1.3rem; position: relative; }
         .cal-day.today-highlight { background: rgba(212, 175, 55, 0.08) !important; }
-
-        /* 日跑道時間刻度優化 */
         .lane-container { display: flex; overflow-x: auto; padding: 25px 35px; gap: 20px; flex: 1; align-items: flex-start; }
         .lane { flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 0; }
         .hour-mark { border-top: 1px solid #f0f0f0; min-height: 160px; position: relative; padding-top: 10px; }
         .hour-label { position: absolute; left: -30px; top: -10px; font-size: 0.75rem; color: #ccc; font-weight: 900; }
-        .apt-card { padding: 15px 20px; background: #fff; border-radius: 25px; border: 1px solid var(--luxe-border); border-left: 10px solid var(--c); margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
+        .apt-card { padding: 15px 20px; background: #fff; border-radius: 25px; border: 1.5px solid var(--luxe-border); border-left: 10px solid var(--c); margin-bottom: 10px; }
         .apt-card.completed { opacity: 0.3 !important; filter: grayscale(1); }
-
         .nav { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 700px; height: 90px; background: rgba(255,255,255,0.92); backdrop-filter: blur(40px); display: flex; justify-content: space-around; align-items: center; border-radius: 45px; border: 1px solid var(--luxe-border); z-index: 2000; box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
         .nav-item { text-align: center; color: #ccc; cursor: pointer; font-size: 1.4rem; }
         .nav-item.active { color: var(--gold); transform: scale(1.1); }
-        
         .page { display: none; width: 100%; height: 100%; }
         .page.active { display: flex; flex-direction: column; }
-
-        /* 預約明信片 */
-        .swal-pill { border-radius: 40px !important; border: 2.2px solid var(--gold) !important; padding: 20px !important; width: 96% !important; max-width: 480px !important; overflow: hidden !important; }
-        .mini-label-btn { padding: 12px 10px; border-radius: 15px; border: 1.5px solid var(--gold); font-size: 0.85rem; font-weight: 900; color: var(--gold); text-align: center; cursor: pointer; }
-        .mini-label-btn:active { background: var(--gold); color: #fff; }
+        .swal-pill { border-radius: 40px !important; border: 2.2px solid var(--gold) !important; padding: 20px !important; width: 96% !important; max-width: 480px !important; }
+        .mini-label-btn { padding: 12px 10px; border-radius: 15px; border: 1.5px solid var(--gold); font-size: 0.8rem; font-weight: 900; color: var(--gold); text-align: center; cursor: pointer; }
         .tag-chip { display: inline-block; padding: 10px 18px; border-radius: 25px; border: 1px solid var(--gold); margin: 4px; font-weight: 900; font-size: 0.95rem; cursor: pointer; background: #fff; }
         .tag-chip.selected { background: linear-gradient(135deg, var(--gold), #f3d060); color: #fff; }
-        
-        .client-grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 15px; padding: 20px 35px; }
-        .client-card { border-radius: 30px; padding: 20px; background: #fff; border: 0.8px solid var(--luxe-border); border-left: 12px solid var(--sty-color, #eee); box-shadow: 0 8px 25px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 10px; }
+        .client-card { border-radius: 30px; padding: 20px; background: #fff; border: 0.8px solid var(--luxe-border); border-left: 12px solid var(--sty-color, #eee); box-shadow: 0 8px 25px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; transition: 0.3s; }
+        .client-card.focus-zoom { transform: scale(1.03); border: 2.5px solid var(--gold); box-shadow: 0 15px 45px rgba(212,175,55,0.25); }
+        .suggest-box { position: absolute; width: 100%; background: #fff; border-radius: 25px; z-index: 5000; display: none; border: 2px solid var(--gold); max-height: 250px; overflow-y: auto; margin-top: 5px; box-shadow: 0 15px 40px rgba(0,0,0,0.15); }
+        .suggest-item { padding: 18px 25px; border-bottom: 0.5px solid #eee; font-weight: 900; font-size: 1.2rem; cursor: pointer; text-align: center; }
     </style>
 </head>
 <body onclick="hideAllSuggests()">
@@ -64,19 +53,28 @@
 </div>
 
 <div id="pg-cli" class="page">
-    <div class="header"><div style="font-size: 2.2rem; font-weight: 900;">顧客</div><div style="display:flex; gap:15px; align-items:center;"><div style="position:relative;" onclick="event.stopPropagation()"><div class="luxe-btn" onclick="popCliSearch()"><i class="fas fa-search"></i></div><div id="cli-sw-box" class="suggest-box" style="width:300px; right:0;"></div></div><select id="cli-f-sty" class="luxe-btn" style="width:100px;" onchange="renderCli()"></select><div class="luxe-btn" onclick="addCliTrig()" style="font-size:2rem; padding:0 30px;">+</div></div></div>
+    <div class="header"><div style="font-size: 2.2rem; font-weight: 900;">顧客</div><div style="display:flex; gap:15px; align-items:center;"><div style="position:relative;" onclick="event.stopPropagation()"><div class="luxe-btn" style="padding:0 24px;" onclick="popCliSearch()"><i class="fas fa-search"></i></div><div id="cli-sw-box" class="suggest-box" style="width:300px; right:0;"></div></div><select id="cli-f-sty" class="luxe-btn" style="width:100px;" onchange="renderCli()"></select><div class="luxe-btn" onclick="addCliTrig()" style="font-size:2rem; padding:0 30px;">+</div></div></div>
     <div class="content-scroll"><div class="client-grid-container" id="cli-list"></div></div>
 </div>
 
 <div id="pg-set" class="page">
     <div class="header"><div style="font-size: 2.2rem; font-weight: 900;">設定</div></div>
     <div class="content-scroll" style="padding:0 35px;">
-        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">1. 雲端同步網址</p>
-            <input type="text" id="gs-url" class="luxe-btn" style="width:100%; margin-bottom:15px; font-size:0.75rem; text-align:left; padding-left:20px;" placeholder="貼入網址">
-            <div class="luxe-btn" style="width:100%; background:var(--gold); color:#fff;" onclick="syncToCloud()">同步至試算表</div>
+        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">1. 雲端同步系統</p>
+            <input type="text" id="gs-url" class="luxe-btn" style="width:100%; margin-bottom:15px; font-size:0.75rem; text-align:left; padding-left:20px;" placeholder="貼入部署網址">
+            <div class="luxe-btn" style="width:100%; background:var(--gold); color:#fff;" onclick="syncToCloud()">立即備份至試算表</div>
         </div>
-        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">2. 排休日期</p><div style="display:flex; gap:20px;"><div class="luxe-btn" style="flex:1" onclick="pickOffMulti()">選擇日期</div><input type="color" id="off-c" onchange="store.offColor=this.value;saveS();initMonth();" style="width:52px;height:52px;border:none;background:none;cursor:pointer;"></div></div>
-        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">3. 備份與恢復</p><div style="display:flex; gap:15px;"><div class="luxe-btn" style="flex:1" onclick="exportToFile()">下載存檔</div><div class="luxe-btn" style="flex:1" onclick="document.getElementById('file-in').click()">讀取存檔</div></div><input type="file" id="file-in" style="display:none" onchange="handleFile(this)"></div>
+        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">2. 支付標籤設定</p>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="pay-t1" class="luxe-btn" style="flex:1;" onchange="store.payTags[0]=this.value;saveS();" placeholder="L">
+                <input type="text" id="pay-t2" class="luxe-btn" style="flex:1;" onchange="store.payTags[1]=this.value;saveS();" placeholder="接">
+                <input type="text" id="pay-t3" class="luxe-btn" style="flex:1;" onchange="store.payTags[2]=this.value;saveS();" placeholder="現">
+            </div>
+        </div>
+        <div style="margin-bottom:40px;"><p style="font-weight:900; color:#888;">3. 資料備份與恢復</p>
+            <div style="display:flex; gap:15px;"><div class="luxe-btn" style="flex:1" onclick="exportToFile()">下載存檔</div><div class="luxe-btn" style="flex:1" onclick="document.getElementById('file-in').click()">讀取存檔</div></div>
+            <input type="file" id="file-in" style="display:none" onchange="handleFile(this)">
+        </div>
     </div>
 </div>
 
@@ -96,15 +94,16 @@
 <script>
     let curD = new Date();
     let cliKw = "";
-    let store = JSON.parse(localStorage.getItem('SALON_MASTER_PRO_V312')) || {
-        gsUrl: "https://script.google.com/macros/s/AKfycbz1e0J9lFYMbN8zq4QSKPEEcEW3kSH1rapltUxITJRuOepVC3Oh1hybU5nOk1Z-Bd-W/exec", 
+    let store = JSON.parse(localStorage.getItem('SALON_MASTER_FINAL_V315')) || {
+        gsUrl: "https://script.google.com/macros/s/AKfycbz1e0J9lFYMbN8zq4QSKPEEcEW3kSH1rapltUxITJRuOepVC3Oh1hybU5nOk1Z-Bd-W/exec",
         offColor: "#e5e5ea", stylists: [{id: 1, name: 'Tonny', color: '#1d1d1f'}],
-        tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: []
+        tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: [], payTags: ["L", "接", "現"]
     };
 
-    function saveS() { localStorage.setItem('SALON_MASTER_PRO_V312', JSON.stringify(store)); }
+    function saveS() { localStorage.setItem('SALON_MASTER_FINAL_V315', JSON.stringify(store)); }
     function hideAllSuggests() { document.querySelectorAll('.suggest-box').forEach(b => b.style.display = 'none'); }
 
+    // --- 分頁與導航 ---
     function showP(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -115,7 +114,7 @@
         else if(id==='pg-day') { renderDay(curD.toLocaleDateString('sv')); }
     }
 
-    // --- 支付標籤標籤化與記事本連動 ---
+    // --- 預約與標籤焊接 ---
     async function popBooking(n="", p="", sId=null, editId=null) {
         const apt = editId ? store.appointments.find(a => String(a.id) === String(editId)) : null;
         const oldN = n; let tempTags = apt ? [...apt.tags] : [];
@@ -125,7 +124,7 @@
                 <div style="position:relative;" onclick="event.stopPropagation()">
                     <div style="display:flex; gap:10px; margin-bottom:12px; align-items:center;">
                         <input id="pop-n" class="luxe-btn" style="flex:1.4; font-size:1.2rem; padding:0 12px;" value="${n}" placeholder="姓名" oninput="searchStored(this, 'pop-box')">
-                        <select id="pop-s" class="luxe-btn" style="flex:0.8; width:75px; padding:0; border-radius:30px; font-size:0.9rem; border:1.2px solid var(--gold);">${store.stylists.map(s=>`<option value="${s.id}" ${Number(s.id)===Number(sId||(apt?apt.styId:1))?'selected':''}>${s.name.slice(0,3)}</option>`).join('')}</select>
+                        <select id="pop-s" class="luxe-btn" style="flex:0.8; width:75px; padding:0; border-radius:30px; border:1.2px solid var(--gold);">${store.stylists.map(s=>`<option value="${s.id}" ${Number(s.id)===Number(sId||(apt?apt.styId:1))?'selected':''}>${s.name.slice(0,3)}</option>`).join('')}</select>
                         <div style="display:flex; flex-direction:column; align-items:center; gap:4px;"><input type="checkbox" id="pop-sv" ${editId?'':'checked'} style="width:22px;height:22px;accent-color:var(--gold);"><span style="font-size:0.7rem;font-weight:900;">存</span></div>
                     </div><div id="pop-box" class="suggest-box" style="top:55px;"></div>
                 </div>
@@ -134,14 +133,14 @@
                     <select id="pop-c" class="luxe-btn" style="flex:0.8; width:75px; padding:0; border-radius:30px; border:1.2px solid var(--gold);">${[1,2,3,4,5].map(v=>`<option value="${v}" ${apt && apt.count==v?'selected':''}>${v}人</option>`).join('')}</select>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom:12px; align-items:stretch;">
-                    <textarea id="pop-amt" class="luxe-btn" style="flex:2.5; height:120px; border-radius:20px; padding:15px; font-size:1rem; text-align:left; resize:none; border:1px solid #ddd;" placeholder="備註與金額 (可換行)">${apt?apt.note:''}</textarea>
-                    <div style="display:flex; flex-direction:column; justify-content:space-between; flex:0.7;">
-                        <div class="mini-label-btn" onclick="addPay('[L]')">L</div>
-                        <div class="mini-label-btn" onclick="addPay('[接]')">接</div>
-                        <div class="mini-label-btn" onclick="addPay('[現]')">現</div>
+                    <textarea id="pop-amt" class="luxe-btn" style="flex:2.5; height:120px; border-radius:20px; padding:15px; font-size:1rem; text-align:left; resize:none; border:1px solid #ddd;" placeholder="備註跟金額 (可換行)">${apt?apt.note:''}</textarea>
+                    <div style="display:flex; flex-direction:column; justify-content:space-around; flex:0.7;">
+                        <div class="mini-label-btn" onclick="addPay('[${store.payTags[0]}]')">${store.payTags[0]}</div>
+                        <div class="mini-label-btn" onclick="addPay('[${store.payTags[1]}]')">${store.payTags[1]}</div>
+                        <div class="mini-label-btn" onclick="addPay('[${store.payTags[2]}]')">${store.payTags[2]}</div>
                     </div>
                 </div>
-                <div class="luxe-btn" style="width:100%; margin-bottom:12px; height:45px;" onclick="const d=document.getElementById('pop-tg'); d.style.display=(d.style.display==='none'?'block':'none')">服務項目 (展開)</div>
+                <div class="luxe-btn" style="width:100%; margin-bottom:12px; height:45px;" onclick="const d=document.getElementById('pop-tg'); d.style.display=(d.style.display==='none'?'block':'none')">選擇服務項目</div>
                 <div id="pop-tg" style="display:none; background:#f9f9f9; padding:8px; border-radius:20px; margin-bottom:12px; border:1px solid #eee; text-align:left; max-height:90px; overflow-y:auto;">
                     ${store.tags.map(t=>`<div class="tag-chip ${tempTags.includes(t.name)?'selected':''}" onclick="this.classList.toggle('selected'); const i=tempTags.indexOf('${t.name}'); if(i>-1) tempTags.splice(i,1); else tempTags.push('${t.name}')">${t.name}</div>`).join('')}
                 </div>
@@ -151,80 +150,92 @@
         if(res && res.n) {
             const data = { id: editId || String(Date.now()), name: res.n, p: res.p, styId: res.s, count: res.c, note: res.note, date: res.d, time: res.t, tags: [...tempTags], done: apt?apt.done:false };
             if(editId) store.appointments = store.appointments.map(a => String(a.id) === String(editId) ? data : a); else store.appointments.push(data);
-            if(res.sv) { let c = store.clients.find(x=>x.n == (editId ? oldN : res.n)); if(c) { c.n = res.n; c.p = res.p; c.lastSty = res.s; } else { store.clients.push({n:res.n, p:res.p, lastSty:res.s, bm:'01', bd:'01'}); } }
+            if(res.sv) { let c = store.clients.find(x=>x.n == (editId ? oldN : res.n)); if(c) { c.n = res.n; c.p = res.p; c.lastSty = res.s; } else { store.clients.push({n:res.n, p:res.p, lastSty:res.s, bm:'01', bd:'01', note: ''}); } }
             saveS(); initMonth(); if(editId||id==='pg-day') renderDay(res.d);
         }
     }
+    function addPay(tag) { const area = document.getElementById('pop-amt'); area.value = tag + " " + area.value.replace(/^\[.*?\]\s*/, ''); }
 
-    function addPay(tag) {
-        const area = document.getElementById('pop-amt');
-        area.value = tag + " " + area.value.replace(/^\[.*?\]\s*/, '');
-    }
-
-    // --- 日跑道刻度分線協議 ---
-    function getDayStr(d) {
-        const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
-        return `${d.toLocaleDateString('sv')} (${weekdays[d.getDay()]})`;
-    }
-
+    // --- 今日預約看板全連動 ---
     function renderDay(ds) {
-        document.getElementById('day-title').innerText = getDayStr(curD); 
+        const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+        document.getElementById('day-title').innerText = `${curD.toLocaleDateString('sv')} (${weekdays[curD.getDay()]})`;
         const area = document.getElementById('day-lanes'); area.innerHTML = '';
         const todaysApts = store.appointments.filter(a => a.date === ds);
         const hours = ["09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"];
-        
         store.stylists.forEach(s => {
             const lane = document.createElement('div'); lane.className = 'lane';
             lane.innerHTML = `<div style="text-align:center; font-weight:900; color:${s.color}; font-size:1.3rem; margin-bottom:20px;">${s.name}</div>`;
             hours.forEach(h => {
                 const hourDiv = document.createElement('div'); hourDiv.className = 'hour-mark';
                 hourDiv.innerHTML = `<div class="hour-label">${h}</div>`;
-                const matched = todaysApts.filter(a => a.time.split(':')[0] === h.split(':')[0] && String(a.styId) === String(s.id));
-                matched.forEach(a => {
+                todaysApts.filter(a => a.time.split(':')[0] === h.split(':')[0] && String(a.styId) === String(s.id)).forEach(a => {
                     const card = document.createElement('div'); card.className = `apt-card ${a.done?'completed':''}`;
                     card.style.setProperty('--c', s.color);
                     card.innerHTML = `
                         <div style="position:absolute; right:12px; top:10px; display:flex; gap:12px;"><i class="fas fa-check-circle" style="color:${a.done?'var(--gold)':'#eee'}; font-size:1.5rem;" onclick="a.done=!a.done;saveS();renderDay('${ds}')"></i><i class="fas fa-pen" style="color:#ccc;" onclick="popBooking('${a.name}','${a.p}','${a.styId}','${a.id}')"></i></div>
                         <div style="font-weight:900; color:var(--gold); font-size:0.9rem;">${a.time}</div>
                         <div style="font-weight:900; font-size:1.4rem;">${a.name} (${a.count}人)</div>
-                        <div style="font-size:0.9rem; color:#888; font-weight:700; margin-top:5px;">${a.tags.join(' + ')}</div>
+                        <div style="font-size:0.9rem; color:#888; font-weight:900; margin-top:5px;">項目：${a.tags.join(' + ')}</div>
                         <div style="font-size:0.85rem; color:#666; white-space:pre-wrap; background:#f9f9fb; padding:8px; border-radius:12px; margin-top:8px; border:0.5px dashed #ddd;">${a.note || '(無備註)'}</div>`;
                     hourDiv.appendChild(card);
-                });
-                lane.appendChild(hourDiv);
+                }); lane.appendChild(hourDiv);
             }); area.appendChild(lane);
         });
     }
 
-    // --- 核心防禦協議全焊接 ---
-    function initMonth() {
-        const grid = document.getElementById('cal-grid'); grid.innerHTML = '';
-        const pick = document.getElementById('m-picker').value ? new Date(document.getElementById('m-picker').value + "-01") : new Date();
-        const year = pick.getFullYear(), month = pick.getMonth();
-        const days = new Date(year, month + 1, 0).getDate(); let sDay = new Date(year, month, 1).getDay(); sDay = sDay === 0 ? 6 : sDay - 1;
-        for(let i=0; i<sDay; i++) grid.appendChild(document.createElement('div'));
-        for(let d=1; d<=days; d++) {
-            const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const el = document.createElement('div'); el.className = 'cal-day';
-            if(store.offDays.includes(ds)) el.style.background = store.offColor;
-            const dots = [...new Set(store.appointments.filter(a => a.date === ds).map(a => store.stylists.find(st => st.id == a.styId)?.color || '#ddd'))].map(c => `<div style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block;margin:2px;"></div>`).join('');
-            el.innerHTML = `<div>${d}</div><div style="margin-top:5px;">${dots}</div>`;
-            el.onclick = () => { curD = new Date(ds); showP('pg-day'); }; grid.appendChild(el);
-        }
+    // --- 顧客資料與搜尋放大 ---
+    async function addCliTrig() {
+        const { value: r } = await Swal.fire({
+            title: '新增顧客資料', customClass: { popup: 'swal-pill' },
+            html: `
+                <input id="cn" class="luxe-btn" style="width:100%;margin-bottom:12px;" placeholder="姓名">
+                <input id="cp" class="luxe-btn" style="width:100%;margin-bottom:12px;" placeholder="電話">
+                <div style="display:flex; gap:10px; margin-bottom:12px;">
+                    <input id="cm" class="luxe-btn" style="flex:1" placeholder="月"><input id="cd" class="luxe-btn" style="flex:1" placeholder="日">
+                </div>
+                <textarea id="cnote" class="luxe-btn" style="width:100%; height:80px; padding:10px; border-radius:20px; resize:none; margin-bottom:12px;" placeholder="顧客備註"></textarea>
+                <select id="cs" class="luxe-btn" style="width:100%;">${store.stylists.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>`,
+            preConfirm: () => ({ n: document.getElementById('cn').value, p: document.getElementById('cp').value, m: document.getElementById('cm').value, d: document.getElementById('cd').value, note: document.getElementById('cnote').value, s: document.getElementById('cs').value })
+        });
+        if(r && r.n) { store.clients.push({ n: r.n, p: r.p, bm: r.m, bd: r.d, note: r.note, lastSty: r.s }); saveS(); renderCli(); }
     }
-    async function pickOffMulti() { await Swal.fire({title:'排休',customClass:{popup:'swal-pill'},html:`<div id="sw-cal" class="calendar-grid" style="margin:0; width:100%;"></div>`,didOpen:()=>{const g=document.getElementById('sw-cal');const y=new Date().getFullYear(), m=new Date().getMonth();const days=new Date(y,m+1,0).getDate();for(let d=1;d<=days;d++){const ds=`${y}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const el=document.createElement('div');el.style.cssText="background:#fff; min-height:80px; padding:15px; cursor:pointer; border:0.5px solid #eee;";el.innerText=d;if(store.offDays.includes(ds))el.style.background=store.offColor;el.onclick=()=>{const i=store.offDays.indexOf(ds);if(i>-1){store.offDays.splice(i,1);el.style.background='#fff';}else{store.offDays.push(ds);el.style.background=store.offColor;}saveS();initMonth();renderSet();};g.appendChild(el);}}});}
-    function renderCli() { const area = document.getElementById('cli-list'); area.innerHTML = store.clients.filter(c => c.n.includes(cliKw) || c.p.includes(cliKw)).map(c => { const s = store.stylists.find(sty => String(sty.id) === String(c.lastSty)); return `<div class="client-card" style="--sty-color:${s?.color || '#eee'}"><div style="font-weight:900; font-size:1.6rem;">${c.n} <span style="font-size:1rem; color:#888;">${s?.name || ''}</span></div><div style="font-size:1.1rem; color:#666;">📞 ${c.p} | 🎂 ${c.bm}/${c.bd}</div><div style="display:flex; justify-content:flex-end; gap:15px;"><div class="luxe-btn" style="height:45px; padding:0 15px;" onclick="popBooking('${c.n}','${c.p}','${c.lastSty}')">預約</div><div class="luxe-btn" style="height:45px; color:red;" onclick="store.clients=store.clients.filter(x=>x.n!='${c.n}');saveS();renderCli();">刪除</div></div></div>`; }).join(''); }
-    function renderSet() { document.getElementById('gs-url').value = store.gsUrl; document.getElementById('s-sty-list').innerHTML = store.stylists.map(s => `<div class="client-card" style="margin-bottom:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; align-items:center; gap:15px;"><input type="color" value="${s.color}" onchange="store.stylists.find(x=>x.id==${s.id}).color=this.value;saveS();initMonth();" style="width:45px;height:45px;border:none;background:none;"><span style="font-weight:900; font-size:1.3rem;">${s.name}</span></div><i class="fas fa-trash-alt" onclick="store.stylists=store.stylists.filter(x=>x.id!=${s.id});saveS();renderSet();" style="color:red; opacity:0.3;"></i></div>`).join(''); }
+
+    function renderCli() {
+        const area = document.getElementById('cli-list');
+        area.innerHTML = store.clients.filter(c => c.n.includes(cliKw) || c.p.includes(cliKw)).map(c => {
+            const s = store.stylists.find(sty => String(sty.id) === String(c.lastSty));
+            const isMatch = cliKw && (c.n.includes(cliKw) || c.p.includes(cliKw));
+            return `<div class="client-card ${isMatch?'focus-zoom':''}" style="--sty-color:${s?.color || '#eee'}"><div style="font-weight:900; font-size:1.6rem;">${c.n} <span style="font-size:0.9rem; color:#888;">主事：${s?.name || ''}</span></div><div style="font-size:1.1rem; color:#666;">📞 ${c.p} | 🎂 ${c.bm}/${c.bd}</div><div style="font-size:0.85rem; color:#888; background:#f9f9f9; padding:8px; border-radius:15px; border:0.5px solid #eee;">${c.note || '尚無詳細備註'}</div><div style="display:flex; justify-content:flex-end; gap:10px; margin-top:5px;"><div class="luxe-btn" style="height:42px; padding:0 20px; font-size:0.9rem;" onclick="popBooking('${c.n}','${c.p}','${c.lastSty}')">快速預約</div><div class="luxe-btn" style="height:42px; color:red; font-size:0.9rem;" onclick="store.clients=store.clients.filter(x=>x.n!='${c.n}');saveS();renderCli();">刪除</div></div></div>`;
+        }).join('');
+    }
+
+    // --- 存檔與修復焊接 ---
+    function handleFile(i){ 
+        const r=new FileReader(); 
+        r.onload=()=>{
+            try {
+                const data = JSON.parse(r.result);
+                if(data.stylists && data.appointments) {
+                    store = data; saveS(); 
+                    Swal.fire("成功恢復", "所有資料已完整還原", "success").then(()=>location.reload());
+                } else throw new Error();
+            } catch(e) { Swal.fire("讀取失敗", "資料格式異常", "error"); }
+        }; 
+        r.readAsText(i.files[0]); 
+    }
+
+    // --- 核心防禦協議全焊接 ---
+    function initMonth() { const grid = document.getElementById('cal-grid'); grid.innerHTML = ''; const pick = document.getElementById('m-picker').value ? new Date(document.getElementById('m-picker').value + "-01") : new Date(); const year = pick.getFullYear(), month = pick.getMonth(); const days = new Date(year, month + 1, 0).getDate(); let sDay = new Date(year, month, 1).getDay(); sDay = sDay === 0 ? 6 : sDay - 1; for(let i=0; i<sDay; i++) grid.appendChild(document.createElement('div')); for(let d=1; d<=days; d++) { const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const el = document.createElement('div'); el.className = 'cal-day'; if(store.offDays.includes(ds)) el.style.background = store.offColor; const dots = [...new Set(store.appointments.filter(a => a.date === ds).map(a => store.stylists.find(st => st.id == a.styId)?.color || '#ddd'))].map(c => `<div style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block;margin:2px;"></div>`).join(''); el.innerHTML = `<div>${d}</div><div style="margin-top:5px;">${dots}</div>`; el.onclick = () => { curD = new Date(ds); showP('pg-day'); }; grid.appendChild(el); } }
+    function renderSet() { document.getElementById('gs-url').value = store.gsUrl; document.getElementById('pay-t1').value = store.payTags[0]; document.getElementById('pay-t2').value = store.payTags[1]; document.getElementById('pay-t3').value = store.payTags[2]; }
     function searchStored(el, boxId) { const val = el.value.trim(); const box = document.getElementById(boxId); if(!val) { box.style.display='none'; return; } const ms = store.clients.filter(c => c.n.includes(val) || c.p.includes(val)); if(ms.length) { box.style.display='block'; box.innerHTML = ms.map(m => `<div class="suggest-item" onclick="pickSug('${m.n}', '${m.p}', '${m.lastSty}', '${boxId}')">${m.n} (${m.p})</div>`).join(''); } else box.style.display='none'; }
     function pickSug(n, p, s, boxId) { if(boxId.includes('cli')) { cliKw = n; renderCli(); Swal.close(); } else { document.getElementById('pop-n').value=n; document.getElementById('pop-p').value=p; document.getElementById('pop-box').style.display='none'; } }
-    async function popCliSearch() { const { value: res } = await Swal.fire({ title: '搜尋', customClass:{popup:'swal-pill'}, html: `<div style="position:relative;" onclick="event.stopPropagation()"><input id="sw-search" class="luxe-btn" style="width:100%; text-align:center;" placeholder="打姓名" oninput="searchStored(this, 'cli-sw-box')"><div id="cli-sw-box" class="suggest-box" style="display:none; position:relative; top:10px;"></div></div>`, showCancelButton:true }); if(res === undefined) { cliKw = ""; renderCli(); } }
-    async function syncToCloud() { const url = document.getElementById('gs-url')?.value || store.gsUrl; if(!url) return Swal.fire("貼入網址"); Swal.fire({ title: '同步中...', didOpen: () => Swal.showLoading() }); try { await fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(store) }); Swal.fire("成功！", "請看試算表", "success"); } catch (e) { Swal.fire("失敗", e.message, "error"); } }
+    async function popCliSearch() { const { value: res } = await Swal.fire({ title: '搜尋', customClass:{popup:'swal-pill'}, html: `<div style="position:relative;" onclick="event.stopPropagation()"><input id="sw-search" class="luxe-btn" style="width:100%; text-align:center;" placeholder="輸入姓名" oninput="searchStored(this, 'cli-sw-box')"><div id="cli-sw-box" class="suggest-box" style="display:none; position:relative; top:10px;"></div></div>`, showCancelButton:true }); if(res === undefined) { cliKw = ""; renderCli(); } }
+    async function syncToCloud() { const url = document.getElementById('gs-url')?.value || store.gsUrl; if(!url) return Swal.fire("貼入網址"); try { await fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(store) }); Swal.fire("成功", "備份完成", "success"); } catch (e) { Swal.fire("失敗", e.message, "error"); } }
     function shiftDay(v) { curD.setDate(curD.getDate() + v); renderDay(curD.toLocaleDateString('sv')); }
     function goToday() { curD = new Date(); initMonth(); renderDay(curD.toLocaleDateString('sv')); showP('pg-day'); }
-    function exportToFile() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(store)],{type:'application/json'})); a.download=`Salon_Backup.json`; a.click(); }
-    function handleFile(i){ const r=new FileReader(); r.onload=()=>{store=JSON.parse(r.result);saveS();location.reload();}; r.readAsText(i.files[0]); }
-    async function addStyTrig() { const {value:n}=await Swal.fire({title:'姓名',input:'text',customClass:{popup:'swal-pill'}}); if(n){store.stylists.push({id:Date.now(),name:n,color:'#D4AF37'});saveS();renderSet();} }
-    async function addCliTrig() { const { value: r } = await Swal.fire({ title: '新增', customClass: { popup: 'swal-pill' }, html: `<input id="cn" class="luxe-btn" style="width:100%;margin-bottom:15px;" placeholder="姓名"><input id="cp" class="luxe-btn" style="width:100%;margin-bottom:15px;" placeholder="電話">`, preConfirm: () => ({ n: document.getElementById('cn').value, p: document.getElementById('cp').value }) }); if(r && r.n) { store.clients.push({ n: r.n, p: r.p, lastSty: 1, bm: '01', bd: '01' }); saveS(); renderCli(); } }
+    function exportToFile() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(store)],{type:'application/json'})); a.download=`Salon_Backup_Final.json`; a.click(); }
+    async function pickOffMulti() { await Swal.fire({title:'排休',customClass:{popup:'swal-pill'},html:`<div id="sw-cal" class="calendar-grid" style="margin:0; width:100%;"></div>`,didOpen:()=>{const g=document.getElementById('sw-cal');const y=new Date().getFullYear(), m=new Date().getMonth();const days=new Date(y,m+1,0).getDate();for(let d=1;d<=days;d++){const ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const el=document.createElement('div');el.style.cssText="background:#fff; min-height:80px; padding:15px; cursor:pointer; border:0.5px solid #eee; font-size:1.2rem;";el.innerText=d;if(store.offDays.includes(ds))el.style.background=store.offColor;el.onclick=()=>{const i=store.offDays.indexOf(ds);if(i>-1){store.offDays.splice(i,1);el.style.background='#fff';}else{store.offDays.push(ds);el.style.background=store.offColor;}saveS();initMonth();renderSet();};g.appendChild(el);}}});}
 
     document.getElementById('m-picker').value = new Date().toISOString().slice(0,7);
     initMonth(); renderCli(); renderSet();
