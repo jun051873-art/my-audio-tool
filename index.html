@@ -58,7 +58,33 @@
         .swal-pill { border-radius: 45px !important; padding: 40px !important; border: 1px solid var(--gold) !important; }
         .tag-chip { display: inline-block; padding: 15px 28px; border-radius: 30px; border: 1px solid var(--gold); margin: 8px; font-weight: 900; font-size: 1.2rem; cursor: pointer; background: #fff; transition: 0.3s; }
         .tag-chip.selected { background: linear-gradient(135deg, var(--gold), #f3d060); color: #fff; border-color: var(--gold); }
-    </style>
+        /* 五彩支付標籤樣式 [cite: 2026-02-28] */
+.tag-group {
+    display: flex; gap: 6px; justify-content: center; margin-top: 10px; margin-bottom: 5px;
+}
+.tag-pill {
+    font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+    background: #f0f0f0; color: #aaa; cursor: pointer; transition: 0.3s;
+    border: 1px solid #eee;
+}
+/* 啟動後的專屬顏色 [cite: 2026-02-28] */
+.tag-pill.active-L { background: #06C755; color: #fff; border-color: #06C755; } /* LinePay 綠 */
+.tag-pill.active-J { background: #ED1C24; color: #fff; border-color: #ED1C24; } /* 街口紅 */
+.tag-pill.active-C { background: #8B4513; color: #fff; border-color: #8B4513; } /* 現金棕 */
+.tag-pill.active-P { background: #007AFF; color: #fff; border-color: #007AFF; } /* 支付藍 */
+.tag-pill.active-S { background: #FFCC00; color: #000; border-color: #FFCC00; } /* 販賣黃 */
+   /* 側邊導航條樣式 */
+    .side-nav {
+        position: fixed; right: 10px; top: 50%; transform: translateY(-50%);
+        display: flex; flex-direction: column; gap: 5px; z-index: 4000;
+        background: rgba(255,255,255,0.7); backdrop-filter: blur(10px);
+        padding: 10px 5px; border-radius: 15px; border: 0.5px solid var(--luxe-border);
+    }
+    .side-nav-item {
+        font-size: 0.8rem; font-weight: 900; color: var(--gold); cursor: pointer;
+        width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+    }
+   </style>
 </head>
 <body>
 
@@ -81,6 +107,7 @@
         </div>
     </div>
     <div class="content-scroll"><div class="client-grid-container" id="cli-list"></div></div>
+    <div class="side-nav" id="cli-side-nav"></div>
 </div>
 
 <div id="pg-set" class="page">
@@ -257,77 +284,74 @@ function saveS() {
                 </div>
             </div>`;
         }).join('');
+        // 自動生成姓氏索引
+    const sideNav = document.getElementById('cli-side-nav');
+    if (sideNav) {
+        // 抓取過濾後的所有客人姓氏開頭並排序
+        const initials = [...new Set(filtered.map(c => c.n[0]))].sort();
+        sideNav.innerHTML = initials.map(char => `
+            <div class="side-nav-item" onclick="scrollToChar('${char}')">${char}</div>
+        `).join('');
+    }
     }
 function renderDay(ds) {
-        const days = ['日','一','二','三','四','五','六'];
-        const dayOfWeek = days[new Date(ds).getDay()];
-        document.getElementById('day-title').innerText = `${ds} (週${dayOfWeek})`; 
+    const days = ['日','一','二','三','四','五','六'];
+    const dayOfWeek = days[new Date(ds).getDay()];
+    const titleEl = document.getElementById('day-title');
+    if(titleEl) titleEl.innerText = `${ds} (週${dayOfWeek})`; 
+    
+    const area = document.getElementById('day-lanes'); 
+    if(!area) return;
+    area.innerHTML = '';
+    
+    const todaysApts = store.appointments.filter(a => a.date === ds); 
+    const businessHours = ["11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
+
+    store.stylists.forEach(s => {
+        const lane = document.createElement('div'); lane.className = 'lane';
+        lane.innerHTML = `<div style="text-align:center; font-weight:900; color:${s.color}; font-size:1.8rem; margin-bottom:20px;">${s.name}</div>`;
         
-        const area = document.getElementById('day-lanes'); area.innerHTML = '';
-        const todaysApts = store.appointments.filter(a => a.date === ds); 
+        businessHours.forEach(t => {
+            const row = document.createElement('div'); row.className = 'time-row-space';
+            row.style.borderTop = "1px solid rgba(0,0,0,0.03)"; row.style.position = "relative"; row.style.minHeight = "60px";
+
+            const matched = todaysApts.filter(a => a.time.split(':')[0] === t.split(':')[0] && String(a.styId) === String(s.id));
+            const timeLabel = `<div style="position:absolute; left:-45px; top:12px; font-size:0.75rem; color:#bbb; font-weight:900; font-family:monospace;">${t}</div>`;
+
+            if(matched.length) {
+                row.innerHTML = timeLabel + matched.map(a => {
+                    // 五彩標籤實體邏輯 [cite: 2026-02-28]
+                    const tagHtml = `
+                        <div class="tag-group">
+                            <span class="tag-pill ${a.tags?.includes('L')?'active-L':''}" onclick="event.stopPropagation(); togglePill('${a.id}','L','LinePay')">Line</span>
+                            <span class="tag-pill ${a.tags?.includes('J')?'active-J':''}" onclick="event.stopPropagation(); togglePill('${a.id}','J','街口')">街口</span>
+                            <span class="tag-pill ${a.tags?.includes('C')?'active-C':''}" onclick="event.stopPropagation(); togglePill('${a.id}','C','現金')">現金</span>
+                            <span class="tag-pill ${a.tags?.includes('P')?'active-P':''}" onclick="event.stopPropagation(); togglePill('${a.id}','P','支付')">支</span>
+                            <span class="tag-pill ${a.tags?.includes('S')?'active-S':''}" onclick="event.stopPropagation(); togglePill('${a.id}','S','販賣')">販</span>
+                        </div>
+                    `;
+
+                    return `
+                    <div class="apt-card ${a.done?'completed':''}" style="--c:${s.color}; margin-left:15px; width:calc(100% - 20px); padding:20px; position:relative;">
+                        ${tagHtml}
+    <div style="position:absolute; right:15px; top:15px; display:flex; gap:12px; align-items:center;">
+        <i class="fas fa-pen" style="color:#ccc; font-size:1.1rem; cursor:pointer;" onclick="event.stopPropagation(); popBooking('${a.name}','${a.p}','${a.styId}','${a.id}')"></i>
         
-        // 1. 定義營業時間軸 (11:00 - 19:00)
-        const businessHours = ["11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
-
-        store.stylists.forEach(s => {
-            const lane = document.createElement('div'); lane.className = 'lane';
-            lane.innerHTML = `<div style="text-align:center; font-weight:900; color:${s.color}; font-size:1.8rem; margin-bottom:20px;">${s.name}</div>`;
-            
-            // 2. 依照時間刻度一一繪製軌道
-            businessHours.forEach(t => {
-                const row = document.createElement('div'); 
-                row.className = 'time-row-space';
-                row.style.borderTop = "1px solid rgba(0,0,0,0.03)"; // 淡淡的刻度線
-                row.style.padding = "10px 0";
-                row.style.position = "relative";
-                row.style.minHeight = "60px";
-
-                // 找尋該時段對應的預約 (精準匹配小時)
-                const matched = todaysApts.filter(a => a.time.split(':')[0] === t.split(':')[0] && String(a.styId) === String(s.id));
-                
-                // 左側時間刻度文字
-                const timeLabel = `<div style="position:absolute; left:-45px; top:12px; font-size:0.75rem; color:#bbb; font-weight:900; font-family:monospace;">${t}</div>`;
-
-                if(matched.length) {
-                    row.innerHTML = timeLabel + matched.map(a => {
-                        let rawNote = a.note_full || "";
-                        let payTag = "";
-                        const lowNote = rawNote.toLowerCase();
-                        if (lowNote.includes("line")) payTag = '<span style="background:#00c300; color:white; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:bold; margin-bottom:8px; display:inline-block;">LINE Pay</span>';
-                        else if (lowNote.includes("街口")) payTag = '<span style="background:#ee0000; color:white; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:bold; margin-bottom:8px; display:inline-block;">街口支付</span>';
-                        else if (lowNote.includes("現金")) payTag = '<span style="background:#666; color:white; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:bold; margin-bottom:8px; display:inline-block;">現金結帳</span>';
-
-                        let cleanNote = rawNote.replace(/line|街口|現金/gi, '').trim();
-                        if (/^\d+$/.test(cleanNote)) cleanNote = '$' + cleanNote;
-
-                        return `
-                        <div class="apt-card ${a.done?'completed':''}" style="--c:${s.color}; margin-left:15px; width:calc(100% - 20px);">
-                            <div style="position:absolute; right:15px; top:15px; display:flex; gap:12px; align-items:center;">
-                                <i class="fas fa-check-circle" style="color:${a.done?'var(--gold)':'#eee'}; font-size:1.6rem;" onclick="toggleAptDone('${a.id}', '${ds}')"></i>
-                                <i class="fas fa-pen" style="color:#ccc; font-size:1.1rem;" onclick="popBooking('${a.name}','${a.p}','${a.styId}','${a.id}')"></i>
-                            </div>
-                            <div style="font-weight:900; color:var(--gold); font-size:1.1rem;">${a.time}</div>
-                            <div style="font-weight:900; font-size:1.8rem; margin:5px 0;">${a.name}</div>
-                            <div style="font-size:1rem; color:#666; background:rgba(212,175,55,0.05); padding:10px; border-radius:15px; border-left:3px solid var(--gold);">
-                                <div style="display:flex; gap:6px; margin-bottom:8px;">
-                                    <div onclick="updatePay('${a.id}', 'Line', '${ds}')" style="cursor:pointer; background:#00c300; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.6rem;">L</div>
-                                    <div onclick="updatePay('${a.id}', '街口', '${ds}')" style="cursor:pointer; background:#ee0000; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.6rem;">街</div>
-                                    <div onclick="updatePay('${a.id}', '現金', '${ds}')" style="cursor:pointer; background:#666; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:white; font-size:0.6rem;">$</div>
-                                </div>
-                                ${payTag}
-                                <div style="font-weight:bold;">${cleanNote || (payTag ? "" : "無備註")}</div>
-                            </div>
-                        </div>`;
-                    }).join('');
-                } else {
-                    // 空白時段顯示
-                    row.innerHTML = timeLabel + `<div style="flex:1; height:40px; margin-left:15px;"></div>`;
-                }
-                lane.appendChild(row);
-            });
-            area.appendChild(lane);
-        });
-    }
+        <i class="fas fa-check-circle" style="color:${a.done?'var(--gold)':'#eee'}; font-size:1.6rem; cursor:pointer;" onclick="event.stopPropagation(); toggleAptDone('${a.id}', '${ds}')"></i>
+    </div>
+                        <div style="font-weight:900; color:var(--gold); font-size:1.1rem;">${a.time}</div>
+                        <div style="font-weight:900; font-size:1.8rem; margin:5px 0;">${a.name}</div>
+                        <div style="font-size:1rem; color:#666; background:rgba(212,175,55,0.05); padding:10px; border-radius:15px;">
+                            <div style="font-weight:bold;">${a.note_full || "無備註"}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            } else {
+                row.innerHTML = timeLabel + `<div style="flex:1; height:40px; margin-left:15px;"></div>`;
+            } lane.appendChild(row);
+        }); area.appendChild(lane);
+    });
+}
 // 1. 強制接通：讓設計師選單具備連動搜尋功能
     const cliStySelect = document.getElementById('cli-f-sty');
     if(cliStySelect) {
@@ -780,6 +804,37 @@ async function popBooking(n="", p="", sId=null, editId=null) {
     async function contactCustomer(p) { await Swal.fire({ title: '聯絡', customClass: { popup: 'swal-pill' }, html: `<div style="display:flex; gap:20px; justify-content:center;"><a href="tel:${p}" class="luxe-btn" style="text-decoration:none; flex:1; border-radius:40px;">撥打</a><a href="sms:${p}" class="luxe-btn" style="text-decoration:none; flex:1; border-radius:40px;">簡訊</a></div>`, showConfirmButton: false }); }
 
     document.getElementById('m-picker').value = new Date().toISOString().slice(0,7);
+    // --- 側邊索引跳轉函數：閃現定位法 ---
+// A-Z 側邊跳轉
+function scrollToChar(char) {
+    const firstMatch = store.clients.find(c => c.n.startsWith(char));
+    if (firstMatch) {
+        const target = document.getElementById(`cli-card-${firstMatch.n}`);
+        if (target) {
+            target.scrollIntoView({ behavior: 'auto', block: 'start' });
+            target.style.background = "rgba(212, 175, 55, 0.2)";
+            setTimeout(() => target.style.background = "#fff", 800);
+        }
+    }
+}
+
+// 五彩標籤核心大腦：變色 + 自動寫入備註 [cite: 2026-02-28]
+function togglePill(aptId, tagCode, tagName) {
+    const apt = store.appointments.find(x => String(x.id) === String(aptId));
+    if (!apt) return;
+    if (!apt.tags) apt.tags = [];
+    
+    const idx = apt.tags.indexOf(tagCode);
+    if (idx > -1) {
+        apt.tags.splice(idx, 1); // 變回灰色
+        apt.note_full = (apt.note_full || "").replace(tagName, "").trim(); 
+    } else {
+        apt.tags.push(tagCode); // 點亮顏色
+        apt.note_full = ((apt.note_full || "") + " " + tagName).trim();
+    }
+    saveS();
+    renderDay(document.getElementById('day-title').innerText.split(' ')[0]); 
+}
     initMonth(); renderCli(); renderSet();
 </script>
 </body>
