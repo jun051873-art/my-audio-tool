@@ -176,8 +176,23 @@ function saveS() {
     }
 
     function pickSug(n, p, s, boxId) {
-        if(boxId === 'sw-box') { cliKw = n; renderCli(); Swal.close(); }
-        else { document.getElementById('pop-n').value=n; document.getElementById('pop-p').value=p; document.getElementById('pop-s').value=s; document.getElementById('pop-box').style.display='none'; }
+        if(boxId === 'sw-box') {
+            cliKw = n; renderCli(n); Swal.close();
+            // 關鍵：延遲一下等待渲染完成後跳轉
+            setTimeout(() => {
+                const target = document.getElementById(`cli-card-${n}`);
+                if(target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    target.style.boxShadow = "0 0 30px var(--gold)"; // 閃爍一下提醒
+                    setTimeout(()=> target.style.boxShadow = "0 8px 25px rgba(0,0,0,0.05)", 2000);
+                }
+            }, 500);
+        } else {
+            document.getElementById('pop-n').value=n; 
+            document.getElementById('pop-p').value=p; 
+            document.getElementById('pop-s').value=s; 
+            document.getElementById('pop-box').style.display='none'; 
+        }
     }
 
     async function popCliSearch() {
@@ -190,19 +205,41 @@ function saveS() {
     }
 
     // --- 靈魂渲染協議 ---
-    function renderCli(cliKw = "") {
+  function renderCli(kw = "") {
         const area = document.getElementById('cli-list');
-        const filtered = store.clients.filter(c => c.n.includes(cliKw) || c.p.includes(cliKw));
-        area.innerHTML = filtered.map(c => `
-            <div class="apt-card" style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
-                <div onclick="popBooking('${c.n}', '${c.p}', '${c.lastSty}')">
-                    <div style="font-size:1.5rem; font-weight:900;">${c.n}</div>
-                    <div style="color:#888;">${c.p}</div>
+        const fStyId = document.getElementById('cli-f-sty').value;
+        cliKw = kw; 
+
+        const filtered = store.clients.filter(c => {
+            const matchKw = (c.n || "").includes(kw) || (c.p || "").includes(kw);
+            const matchSty = fStyId === "" || String(c.lastSty) === String(fStyId);
+            return matchKw && matchSty;
+        });
+
+        area.innerHTML = filtered.map(c => {
+            // 精準抓取該客人的完成紀錄
+            const history = store.appointments
+                .filter(a => (a.name === c.n || a.p === c.p) && a.done)
+                .sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3);
+
+            const sty = store.stylists.find(s => String(s.id) === String(c.lastSty));
+            const styC = sty?.color || '#D4AF37';
+
+            return `
+            <div id="cli-card-${c.n}" class="apt-card" style="margin-bottom:25px; border-left:12px solid ${styC}; background:#fff; padding:25px; border-radius:35px; position:relative;">
+                <div style="position:absolute; right:20px; top:20px; color:${styC}; border:1px solid ${styC}; padding:4px 12px; border-radius:15px; font-size:0.8rem; font-weight:900;">${sty?.name || '未指定'}</div>
+                <div style="font-weight:900; font-size:1.8rem; margin-bottom:5px;">${c.n}</div>
+                <div style="font-size:1.1rem; color:${styC}; font-weight:700; margin-bottom:12px;">「${c.note || '新顧客'}」</div>
+                <div style="background:#f9f9fb; padding:15px; border-radius:20px; font-size:0.9rem;">
+                    <div style="color:#bbb; font-weight:900; font-size:0.7rem; margin-bottom:8px;">最近消費紀錄</div>
+                    ${history.length ? history.map(h => `<div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>${h.date}</span><span style="color:${styC}">${(h.tags || []).join('+')}</span></div>`).join('') : '<div style="color:#ccc;">尚無完成紀錄</div>'}
                 </div>
-                <i class="fas fa-trash-alt" style="color:rgba(255,0,0,0.1); font-size:1.3rem;" 
-                   onclick="Swal.fire({ title:'永久刪除顧客？', text:'警告：刪除【${c.n}】後資料將無法找回！', icon:'error', showCancelButton:true, confirmButtonColor:'#d33', confirmButtonText:'永久刪除', cancelButtonText:'取消', customClass:{popup:'swal-pill'} }).then(res=>{ if(res.isConfirmed){ store.clients=store.clients.filter(x=>x.n!=='${c.n}'); saveS(); renderCli(); }})"></i>
-            </div>
-        `).join('');
+                <div style="display:flex; justify-content:flex-end; gap:25px; margin-top:20px;">
+                    <i class="fas fa-sticky-note" style="color:#ccc;" onclick="editCliNote('${c.n}')"></i>
+                    <i class="fas fa-calendar-plus" style="color:${styC}; font-size:1.8rem;" onclick="popBooking('${c.n}','${c.p}','${c.lastSty}')"></i>
+                </div>
+            </div>`;
+        }).join('');
     }
 function renderDay(ds) {
         const days = ['日','一','二','三','四','五','六'];
@@ -507,20 +544,28 @@ async function popBooking(n="", p="", sId=null, editId=null) {
         container.appendChild(backBox);
     }
 
-    // --- 選色核心：喚起 iOS 最直觀的高級選色器 ---
-    function pickLuxeColor(type, id = null) {
-        const picker = document.createElement('input');
-        picker.type = 'color';
-        picker.value = type === 'off' ? (store.offColor || '#1d1d1f') : store.stylists.find(x => x.id == id).color;
+    // --- 平板選色鋼鐵修復版 ---
+    async function pickLuxeColor(type, id = null) {
+        const curColor = type === 'off' ? (store.offColor || '#e5e5ea') : store.stylists.find(x => x.id == id).color;
         
-        // 這種觸發方式在 iOS/Mac 上會直接跳出「格線、光譜、滑桿」
-        picker.onchange = () => {
-            if (type === 'off') store.offColor = picker.value;
-            else { const s = store.stylists.find(x => x.id == id); if(s) s.color = picker.value; }
-            saveS(); renderSet(); initMonth();
-            if(window.renderCli) renderCli(); 
-        };
-        picker.click();
+        // 透過 SweetAlert 跳出專用選色器，解決平板攔截問題
+        const { value: resColor } = await Swal.fire({
+            title: '選擇顏色',
+            html: `<input type="color" id="swal-color-p" value="${curColor}" style="width:150px; height:150px; border:none; background:none; cursor:pointer;">`,
+            showCancelButton: true,
+            confirmButtonText: '確定套用',
+            customClass: { popup: 'swal-pill' },
+            preConfirm: () => document.getElementById('swal-color-p').value
+        });
+
+        if (resColor) {
+            if (type === 'off') store.offColor = resColor;
+            else { const s = store.stylists.find(x => x.id == id); if(s) s.color = resColor; }
+            saveS(); 
+            renderSet(); // 全局刷新
+            initMonth(); 
+            if(window.renderCli) renderCli(cliKw);
+        }
     }
 
     // 二次確認：刪除項目
@@ -558,7 +603,16 @@ async function popBooking(n="", p="", sId=null, editId=null) {
             }
         });
     }
-
+// 在最下面 initMonth() 之前貼上這段，確保選單會出現設計師
+    const fillStySelect = () => {
+        const sel = document.getElementById('cli-f-sty');
+        if(sel) {
+            sel.innerHTML = '<option value="">所有設計師</option>' + 
+                store.stylists.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        }
+    };
+    // 執行一次填充
+    fillStySelect();
     function updateBizHour() {
         store.startH = document.getElementById('start-h').value;
         store.endH = document.getElementById('end-h').value;
@@ -583,58 +637,75 @@ async function popBooking(n="", p="", sId=null, editId=null) {
         }
     }
 
-    async function addCliTrig() { const { value: r } = await Swal.fire({ title: '新增顧客', customClass: { popup: 'swal-pill' }, html: `<input id="cn" class="luxe-btn" style="width:100%;margin-bottom:20px;" placeholder="姓名"><input id="cp" class="luxe-btn" style="width:100%;margin-bottom:20px;" placeholder="電話"><select id="cs" class="luxe-btn" style="width:100%;margin-bottom:20px;">${store.stylists.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select><div style="display:flex; gap:15px;"><input id="cm" class="luxe-btn" style="flex:1" placeholder="月"><input id="cd" class="luxe-btn" style="flex:1" placeholder="日"></div>`, preConfirm: () => ({ n: document.getElementById('cn').value, p: document.getElementById('cp').value, s: document.getElementById('cs').value, m: document.getElementById('cm').value, d: document.getElementById('cd').value }) }); if(r && r.n) { store.clients.push({ n: r.n, p: r.p, lastSty: r.s, bm: r.m, bd: r.d }); saveS(); renderCli(); } }
-    async function editCli(oldN) { const c = store.clients.find(x => x.n === oldN); const { value: r } = await Swal.fire({ title: '修改', customClass: { popup: 'swal-pill' }, html: `<input id="en" class="luxe-btn" style="width:100%;margin-bottom:20px;" value="${c.n}"><input id="ep" class="luxe-btn" style="width:100%;margin-bottom:20px;" value="${c.p}"><select id="es" class="luxe-btn" style="width:100%;margin-bottom:20px;">${store.stylists.map(s=>`<option value="${s.id}" ${String(s.id)===String(c.lastSty)?'selected':''}>${s.name}</option>`).join('')}</select><div style="display:flex;gap:15px;"><input id="em" class="luxe-btn" style="flex:1" value="${c.bm}"><input id="ed" class="luxe-btn" style="flex:1" value="${c.bd}"></div>`, preConfirm: () => ({ n: document.getElementById('en').value, p: document.getElementById('ep').value, s: document.getElementById('es').value, m: document.getElementById('em').value, d: document.getElementById('ed').value }) }); if (r) { c.n = r.n; c.p = r.p; c.lastSty = r.s; c.bm = r.m; c.bd = r.d; saveS(); renderCli(); } }
+  async function addCliTrig() {
+        const { value: r } = await Swal.fire({
+            title: '新增顧客',
+            customClass: { popup: 'swal-pill' },
+            html: `
+                <input id="cn" class="luxe-btn" style="width:100%;margin-bottom:15px;" placeholder="姓名">
+                <input id="cp" class="luxe-btn" style="width:100%;margin-bottom:15px;" placeholder="電話">
+                <select id="cs" class="luxe-btn" style="width:100%;margin-bottom:15px;">${store.stylists.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
+                <div style="display:flex; gap:10px; justify-content:center; align-items:center;">
+                    <div style="font-weight:900; color:var(--gold);">生日</div>
+                    <input id="cm" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" placeholder="月" type="number">
+                    <span style="font-weight:900;">/</span>
+                    <input id="cd" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" placeholder="日" type="number">
+                </div>`,
+            preConfirm: () => ({
+                n: document.getElementById('cn').value,
+                p: document.getElementById('cp').value,
+                s: document.getElementById('cs').value,
+                m: document.getElementById('cm').value,
+                d: document.getElementById('cd').value
+            })
+        });
+        if (r && r.n) {
+            store.clients.push({ n: r.n, p: r.p, lastSty: r.s, bm: r.m, bd: r.d });
+            saveS(); renderCli();
+        }
+    }
+
+   async function editCli(oldN) {
+        const c = store.clients.find(x => x.n === oldN);
+        const { value: r } = await Swal.fire({
+            title: '修改顧客資料', customClass: { popup: 'swal-pill' },
+            html: `
+                <input id="en" class="luxe-btn" style="width:100%;margin-bottom:15px;" value="${c.n}" placeholder="姓名">
+                <input id="ep" class="luxe-btn" style="width:100%;margin-bottom:15px;" value="${c.p}" placeholder="電話">
+                <select id="es" class="luxe-btn" style="width:100%;margin-bottom:15px;">
+                    ${store.stylists.map(s=>`<option value="${s.id}" ${String(s.id)===String(c.lastSty)?'selected':''}>${s.name}</option>`).join('')}
+                </select>
+                <div style="display:flex; gap:10px; justify-content:center; align-items:center;">
+                    <div style="font-weight:900; color:var(--gold);">生日</div>
+                    <input id="em" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" value="${c.bm||'01'}" type="number">
+                    <span style="font-weight:900;">/</span>
+                    <input id="ed" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" value="${c.bd||'01'}" type="number">
+                </div>`,
+            preConfirm: () => ({ n: document.getElementById('en').value, p: document.getElementById('ep').value, s: document.getElementById('es').value, m: document.getElementById('em').value, d: document.getElementById('ed').value })
+        });
+        if (r) { c.n = r.n; c.p = r.p; c.lastSty = r.s; c.bm = r.m; c.bd = r.d; saveS(); renderCli(); }
+    }
     async function editStyTrig(id, oldN) { const {value:n}=await Swal.fire({title:'更名', input:'text', inputValue:oldN, customClass:{popup:'swal-pill'}}); if(n){store.stylists.find(x=>x.id==id).name=n; saveS(); renderSet();} }
     async function addStyTrig() { const {value:n}=await Swal.fire({title:'姓名',input:'text',customClass:{popup:'swal-pill'}}); if(n){store.stylists.push({id:Date.now(),name:n,color:'#D4AF37'});saveS();renderSet();} }
     async function addTagTrig() { const {value:n}=await Swal.fire({title:'服務項目',input:'text',customClass:{popup:'swal-pill'}}); if(n){store.tags.push({id:Date.now(),name:n});saveS();renderSet();} }
+    function exportToFile() { const b=new Blob([JSON.stringify(store)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Salon_Backup.json`; a.click(); }
+
     function handleFile(i) {
         const r = new FileReader();
         r.onload = () => {
             try {
                 let importedData = JSON.parse(r.result);
-                
-                // 【智慧補件】：若舊備份缺少新功能欄位，自動預設補齊，防止介面卡死
                 if (!importedData.startH) importedData.startH = "11:00"; 
                 if (!importedData.endH) importedData.endH = "19:00";
                 if (!importedData.offColor) importedData.offColor = "#e5e5ea"; 
-                
-                // 修正預約紀錄：確保每一筆都有 ID 與「完成」狀態標籤
                 if (importedData.appointments) {
                     importedData.appointments = importedData.appointments.map(a => ({
-                        ...a,
-                        id: a.id || String(Date.now() + Math.random()),
-                        tags: a.tags || [],
-                        done: a.done || false
+                        ...a, id: a.id || String(Date.now() + Math.random()), tags: a.tags || [], done: a.done || false
                     }));
                 }
-
-                // 修正顧客資料：補齊生日與長備註欄位
-                if (importedData.clients) {
-                    importedData.clients = importedData.clients.map(c => ({
-                        ...c,
-                        note: c.note || "",
-                        bm: c.bm || "01",
-                        bd: c.bd || "01"
-                    }));
-                }
-
-                // 存入手機存儲並同步發射到雲端試算表
-                store = importedData;
-                saveS(); 
-                
-                Swal.fire({
-                    title: '復原成功',
-                    text: '舊資料已自動適配新版並同步雲端',
-                    icon: 'success',
-                    customClass: { popup: 'swal-pill' }
-                }).then(() => {
-                    location.reload(); // 徹底重整網頁，啟動所有新功能
-                });
-            } catch (e) {
-                console.error("復原失敗:", e);
-                Swal.fire('錯誤', '檔案格式不符，請確認是否為正確的備份檔', 'error');
-            }
+                store = importedData; saveS();
+                Swal.fire({ title: '復原成功', icon: 'success', customClass: { popup: 'swal-pill' } }).then(() => { location.reload(); });
+            } catch (e) { Swal.fire('錯誤', '檔案讀取失敗', 'error'); }
         };
         r.readAsText(i.files[0]);
     }
