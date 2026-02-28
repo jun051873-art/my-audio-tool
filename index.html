@@ -176,22 +176,36 @@ function saveS() {
     }
 
     function pickSug(n, p, s, boxId) {
-        if(boxId === 'sw-box') {
-            cliKw = n; renderCli(n); Swal.close();
-            // 關鍵：延遲一下等待渲染完成後跳轉
+        if(boxId === 'sw-box' || boxId === 'cli-sw-box') {
+            cliKw = n; 
+            renderCli(); // 執行搜尋過濾
+            Swal.close();
+            
+            // --- 賈伯斯風格：自動捲動並閃爍對焦 ---
             setTimeout(() => {
+                // 使用姓名作為 ID 找到那張卡片
                 const target = document.getElementById(`cli-card-${n}`);
                 if(target) {
+                    // 平滑捲動到畫面中央
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    target.style.boxShadow = "0 0 30px var(--gold)"; // 閃爍一下提醒
-                    setTimeout(()=> target.style.boxShadow = "0 8px 25px rgba(0,0,0,0.05)", 2000);
+                    // 金色閃爍效果，直擊人心
+                    target.style.transition = "0.5s";
+                    target.style.boxShadow = "0 0 50px var(--gold)";
+                    target.style.transform = "scale(1.02)";
+                    
+                    // 1.5 秒後恢復原狀
+                    setTimeout(() => {
+                        target.style.boxShadow = "0 10px 35px rgba(0,0,0,0.04)";
+                        target.style.transform = "scale(1)";
+                    }, 1500);
                 }
-            }, 500);
+            }, 300);
         } else {
-            document.getElementById('pop-n').value=n; 
-            document.getElementById('pop-p').value=p; 
-            document.getElementById('pop-s').value=s; 
-            document.getElementById('pop-box').style.display='none'; 
+            // 預約視窗內的填入邏輯保持不變
+            document.getElementById('pop-n').value = n; 
+            document.getElementById('pop-p').value = p; 
+            document.getElementById('pop-s').value = s; 
+            document.getElementById('pop-box').style.display = 'none'; 
         }
     }
 
