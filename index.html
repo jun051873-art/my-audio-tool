@@ -177,29 +177,32 @@ function saveS() {
 
     function pickSug(n, p, s, boxId) {
         if(boxId === 'sw-box' || boxId === 'cli-sw-box') {
-            cliKw = n; 
-            renderCli(); // 執行搜尋過濾
+         cliKw = ""; // 重點 1：清空關鍵字，顯示所有人才能滑動
+            renderCli(""); // 重點 2：強制畫出所有人的卡片
             Swal.close();
-            
-            // --- 賈伯斯風格：自動捲動並閃爍對焦 ---
+
+            // --- 賈伯斯風格：自動平滑捲動並閃爍對焦 ---
             setTimeout(() => {
-                // 使用姓名作為 ID 找到那張卡片
+                // 用 ID 找到那張卡片
                 const target = document.getElementById(`cli-card-${n}`);
                 if(target) {
-                    // 平滑捲動到畫面中央
+                    // 1. 平滑捲動到畫面中央
                     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // 金色閃爍效果，直擊人心
-                    target.style.transition = "0.5s";
-                    target.style.boxShadow = "0 0 50px var(--gold)";
-                    target.style.transform = "scale(1.02)";
                     
-                    // 1.5 秒後恢復原狀
+                    // 2. 視覺效果：金色閃爍、稍微放大、浮到最上層
+                    target.style.transition = "0.6s cubic-bezier(0.23, 1, 0.32, 1)";
+                    target.style.boxShadow = "0 0 60px var(--gold)";
+                    target.style.transform = "scale(1.06)";
+                    target.style.zIndex = "5000";
+                    
+                    // 2秒後自動恢復原狀
                     setTimeout(() => {
                         target.style.boxShadow = "0 10px 35px rgba(0,0,0,0.04)";
                         target.style.transform = "scale(1)";
-                    }, 1500);
+                        target.style.zIndex = "1";
+                    }, 2000);
                 }
-            }, 300);
+            }, 400); // 稍微延遲 0.4 秒，等卡片全部畫好再滑動
         } else {
             // 預約視窗內的填入邏輯保持不變
             document.getElementById('pop-n').value = n; 
