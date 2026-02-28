@@ -718,26 +718,19 @@ async function popBooking(n="", p="", sId=null, editId=null) {
         }
     }
 
-   async function editCli(oldN) {
-        const c = store.clients.find(x => x.n === oldN);
-        const { value: r } = await Swal.fire({
-            title: '修改顧客資料', customClass: { popup: 'swal-pill' },
-            html: `
-                <input id="en" class="luxe-btn" style="width:100%;margin-bottom:15px;" value="${c.n}" placeholder="姓名">
-                <input id="ep" class="luxe-btn" style="width:100%;margin-bottom:15px;" value="${c.p}" placeholder="電話">
-                <select id="es" class="luxe-btn" style="width:100%;margin-bottom:15px;">
-                    ${store.stylists.map(s=>`<option value="${s.id}" ${String(s.id)===String(c.lastSty)?'selected':''}>${s.name}</option>`).join('')}
-                </select>
-                <div style="display:flex; gap:10px; justify-content:center; align-items:center;">
-                    <div style="font-weight:900; color:var(--gold);">生日</div>
-                    <input id="em" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" value="${c.bm||'01'}" type="number">
-                    <span style="font-weight:900;">/</span>
-                    <input id="ed" class="luxe-btn" style="width:65px; text-align:center; padding:10px;" value="${c.bd||'01'}" type="number">
-                </div>`,
-            preConfirm: () => ({ n: document.getElementById('en').value, p: document.getElementById('ep').value, s: document.getElementById('es').value, m: document.getElementById('em').value, d: document.getElementById('ed').value })
+   // --- 賈伯斯風格：點擊空白處自動關閉建議視窗 ---
+    window.addEventListener('click', function(e) {
+        // 抓取所有的建議視窗（包含搜尋欄與預約彈窗內的）
+        const boxes = document.querySelectorAll('.suggest-box');
+        
+        boxes.forEach(box => {
+            // 如果點擊的地方「不是」輸入框，也不是建議視窗本身，就隱藏它
+            // 這樣在登記顧客資料時，點一下旁邊空白處，清單就會消失
+            if (!e.target.closest('.luxe-btn') && !e.target.closest('.suggest-box') && !e.target.closest('input')) {
+                box.style.display = 'none';
+            }
         });
-        if (r) { c.n = r.n; c.p = r.p; c.lastSty = r.s; c.bm = r.m; c.bd = r.d; saveS(); renderCli(); }
-    }
+    });
     async function editStyTrig(id, oldN) { const {value:n}=await Swal.fire({title:'更名', input:'text', inputValue:oldN, customClass:{popup:'swal-pill'}}); if(n){store.stylists.find(x=>x.id==id).name=n; saveS(); renderSet();} }
     async function addStyTrig() { const {value:n}=await Swal.fire({title:'姓名',input:'text',customClass:{popup:'swal-pill'}}); if(n){store.stylists.push({id:Date.now(),name:n,color:'#D4AF37'});saveS();renderSet();} }
     async function addTagTrig() { const {value:n}=await Swal.fire({title:'服務項目',input:'text',customClass:{popup:'swal-pill'}}); if(n){store.tags.push({id:Date.now(),name:n});saveS();renderSet();} }
