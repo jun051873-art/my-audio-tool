@@ -533,17 +533,70 @@ async function popBooking(n="", p="", sId=null, editId=null) {
             <div class="luxe-btn" style="width:100%; margin-top:10px; border:1px dashed var(--gold); background:transparent; color:var(--gold);" onclick="addTagTrig()">+ 新增項目</div>`;
         container.appendChild(tagBox);
 
-        // 5. 數據備份
+ // 5. 數據備份 (鋼鐵接通版)
         const backBox = document.createElement('div');
         backBox.innerHTML = `
             <p style="font-weight:900; color:#888; font-size:1.3rem;">4. 數據備份</p>
             <div style="display:flex; gap:15px;">
                 <div class="luxe-btn" style="flex:1;" onclick="exportToFile()">下載備份</div>
-                <div class="luxe-btn" style="flex:1;" onclick="document.getElementById('file-in').click()">讀取備份</div>
+                <div class="luxe-btn" style="flex:1;" onclick="triggerLoad()">讀取備份</div>
             </div>`;
         container.appendChild(backBox);
     }
 
+    // --- 資料備份與恢復協議 (旗艦接通版) ---
+    
+    // 新增：觸發選檔的開關，解決 iPad 沒反應的問題
+    function triggerLoad() {
+        let fileIn = document.getElementById('file-in');
+        if (!fileIn) {
+            fileIn = document.createElement('input');
+            fileIn.type = 'file';
+            fileIn.id = 'file-in';
+            fileIn.style.display = 'none';
+            fileIn.onchange = function() { handleFile(this); };
+            document.body.appendChild(fileIn);
+        }
+        fileIn.click();
+    }
+
+    function exportToFile() { 
+        const data = JSON.stringify(store);
+        const blob = new Blob([data], {type: 'application/json'}); 
+        const a = document.createElement('a'); 
+        a.href = URL.createObjectURL(blob); 
+        a.download = `Salon_Backup_${new Date().toLocaleDateString('sv')}.json`; 
+        a.click(); 
+    }
+
+    function handleFile(input) {
+        if (!input.files || !input.files[0]) return;
+        const reader = new FileReader();
+        reader.onload = function() {
+            try {
+                const importedData = JSON.parse(reader.result);
+                // 結構自動補全
+                if (!importedData.stylists) importedData.stylists = store.stylists;
+                if (!importedData.appointments) importedData.appointments = [];
+                if (!importedData.clients) importedData.clients = [];
+                
+                store = importedData; 
+                saveS(); 
+                
+                Swal.fire({ 
+                    title: '復原成功', 
+                    text: '資料已全數匯入', 
+                    icon: 'success', 
+                    customClass: { popup: 'swal-pill' } 
+                }).then(() => { 
+                    location.reload(); 
+                });
+            } catch (e) { 
+                Swal.fire('錯誤', '檔案格式不正確', 'error'); 
+            }
+        };
+        reader.readAsText(input.files[0]);
+    }
     // --- 平板選色鋼鐵修復版 ---
     async function pickLuxeColor(type, id = null) {
         const curColor = type === 'off' ? (store.offColor || '#e5e5ea') : store.stylists.find(x => x.id == id).color;
