@@ -77,8 +77,7 @@
 
 <div id="pg-cli" class="page">
     <div class="header">
-        <div style="font-size: 2.6rem; font-weight: 900;">顧客</div>
-        <div style="display:flex; gap:20px; align-items:center;">
+<div style="font-size: 2.6rem; font-weight: 900; cursor:pointer;" onclick="cliKw=''; renderCli();">顧客</div>        <div style="display:flex; gap:20px; align-items:center;">
             <div style="position:relative;"><div class="luxe-btn" onclick="popCliSearch()"><i class="fas fa-search"></i></div><div id="cli-sw-box" class="suggest-box" style="width:350px; right:0;"></div></div>
             <select id="cli-f-sty" class="luxe-btn" onchange="renderCli()"></select>
             <div class="luxe-btn" onclick="addCliTrig()" style="font-size:2.2rem; padding:12px 35px;">+</div>
@@ -109,13 +108,33 @@
     let curD = new Date();
     let tempTags = [];
     let cliKw = "";
+    // 鎖死你的 Google Apps Script 網址 [cite: 2026-03-01]
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzPVyLShs1VyaM1LPDxAwgp3C7q-gtCxqHun7JcHqt5OrXm-td4ZbTa_XVlaUgMdXs5/exec";
+    
     let store = JSON.parse(localStorage.getItem('SALON_LOCK_V318')) || {
-        startH: "11:00", endH: "19:00", offColor: "#e5e5ea", 
+        startH: "11:00", endH: "19:00", offColor: "#e5e5ea", gSheetUrl: GAS_URL,
         stylists: [{id: 1, name: 'Tonny', color: '#1d1d1f'}, {id: 2, name: 'Apple', color: '#D4AF37'}],
         tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: []
     };
+    // 確保舊資料也能抓到新網址 [cite: 2026-03-01]
+    if(!store.gSheetUrl || store.gSheetUrl !== GAS_URL) {
+        store.gSheetUrl = GAS_URL;
+    }
 
-    function saveS() { localStorage.setItem('SALON_LOCK_V318', JSON.stringify(store)); }
+    // 修改即自動同步備份 [cite: 2026-03-01]
+    function saveS() { 
+        localStorage.setItem('SALON_LOCK_V318', JSON.stringify(store)); 
+        syncToGSheet(); 
+    }
+
+    // 發射數據到 Google 試算表 [cite: 2026-03-01]
+    async function syncToGSheet() { 
+        if(!store.gSheetUrl) return;
+        try { 
+            await fetch(store.gSheetUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(store) }); 
+            console.log("✅ 雲端備份發射成功");
+        } catch(e) { console.error("❌ 備份失敗", e); } 
+    }
 
     function showP(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
