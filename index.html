@@ -341,7 +341,26 @@
 
     const fillStySelect = () => { const sel = document.getElementById('cli-f-sty'); if(sel) sel.innerHTML = '<option value="">所有設計師</option>' + store.stylists.map(s => `<option value="${s.id}">${s.name}</option>`).join(''); };
     document.getElementById('m-picker').value = new Date().toISOString().slice(0,7);
-    fillStySelect(); initMonth(); renderCli(); renderSet();
+   fillStySelect(); initMonth(); renderCli(); renderSet();
+// --- 點擊卡片備註：彈出打字視窗核心 [cite: 2026-03-01] ---
+async function popNoteEdit(aptId, ds) {
+    const a = store.appointments.find(x => String(x.id) === String(aptId));
+    if(!a) return;
+    const { value: text } = await Swal.fire({
+        title: '詳細備註',
+        input: 'textarea',
+        inputValue: a.note_full || "",
+        inputPlaceholder: '在此輸入內容...',
+        showCancelButton: true,
+        confirmButtonText: '存檔',
+        cancelButtonText: '取消'
+    });
+    if (text !== undefined) {
+        a.note_full = text;
+        saveS();
+        renderDay(ds); // 存檔後立即刷新
+    }
+}
 </script>
 </body>
 </html>
