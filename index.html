@@ -190,7 +190,7 @@
                             <div style="font-weight:900; font-size:1.8rem; margin:5px 0;">${a.n || a.name}</div>
                             <div style="background:rgba(212,175,55,0.05); padding:15px; border-radius:20px; border-left:4px solid var(--gold); margin-top:10px;">
                                 <div style="font-weight:900; color:var(--gold); font-size:1.1rem; margin-bottom:5px;">✂️ ${(a.tags || []).join('+') || '服務項目'}</div>
-                                <div style="font-size:0.95rem; color:#444; line-height:1.5; white-space: pre-wrap; font-weight:700;">${a.note_full || "點擊標籤或輸入備註..."}</div>
+                               <div onclick="event.stopPropagation(); popNoteEdit('${a.id}', '${ds}')" style="font-size:0.95rem; color:#444; line-height:1.5; white-space: pre-wrap; font-weight:700; cursor:pointer; min-height:20px;">${a.note_full || "點擊此處輸入詳細備註..."}</div>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:10px; border-top:1px dashed #eee;">
                                 <div style="font-weight:900; color:#888; font-size:1rem;">📞 ${a.p||a.phone||"未留電話"}</div>
@@ -204,7 +204,7 @@
         });
     }
 
-    // --- 預約視窗：快搜聯想 + 自動快存 [cite: 2026-03-01] ---
+    // --- 預約視窗：補回勾選同步存檔功能 [cite: 2026-03-01] ---
     async function popBooking(n="", p="", sId=null, editId=null) {
         const apt = editId ? store.appointments.find(a => String(a.id) === String(editId)) : null;
         tempTags = apt ? [...(apt.tags || [])] : [];
@@ -226,18 +226,36 @@
                 <textarea id="pop-note" class="luxe-btn" style="width:100%; height:80px; border-radius:20px; margin-bottom:15px;" placeholder="備註內容...">${apt?apt.note_full||apt.note:""}</textarea>
                 <div class="drawer-btn" onclick="const c=document.getElementById('pop-tg-dr'); c.style.display=c.style.display==='block'?'none':'block';">項目 <i class="fas fa-chevron-down"></i></div>
                 <div id="pop-tg-dr" class="drawer-content">${store.tags.map(t=>`<div class="tag-chip ${tempTags.includes(t.name)?'selected':''}" onclick="this.classList.toggle('selected'); const i=tempTags.indexOf('${t.name}'); if(i>-1) tempTags.splice(i,1); else tempTags.push('${t.name}')">${t.name}</div>`).join('')}</div>
+                
+                <div style="display:flex; align-items:center; justify-content:center; gap:12px; margin: 15px 0;">
+                    <input type="checkbox" id="pop-save-cli" style="width:22px; height:22px; accent-color:var(--gold);" ${editId?'disabled':'checked'}>
+                    <label for="pop-save-cli" style="font-weight:900; color:var(--gold); font-size:1.1rem;">同步存至顧客名冊</label>
+                </div>
+
                 <div style="display:flex; gap:10px;"><input id="pop-d" class="luxe-btn" type="date" style="flex:1.5; border-radius:30px;" value="${apt?apt.date:curD.toLocaleDateString('sv')}"><input id="pop-t" class="luxe-btn" type="time" style="flex:1; border-radius:30px;" value="${apt?apt.time:'12:00'}"></div>`,
-            preConfirm: () => ({ n: document.getElementById('pop-n').value, p: document.getElementById('pop-p').value, styId: document.getElementById('pop-s').value, c: document.getElementById('pop-c').value, note: document.getElementById('pop-note').value, d: document.getElementById('pop-d').value, t: document.getElementById('pop-t').value })
+            preConfirm: () => ({ 
+                n: document.getElementById('pop-n').value, 
+                p: document.getElementById('pop-p').value, 
+                styId: document.getElementById('pop-s').value, 
+                c: document.getElementById('pop-c').value, 
+                note: document.getElementById('pop-note').value, 
+                d: document.getElementById('pop-d').value, 
+                t: document.getElementById('pop-t').value,
+                saveCli: document.getElementById('pop-save-cli').checked 
+            })
         });
         if (res && res.n) {
             const data = { id: editId || String(Date.now()), n: res.n, p: res.p, styId: res.styId, c: res.c, note_full: res.note, date: res.d, time: res.t, tags: [...tempTags], done: apt?apt.done:false, payTags: apt?apt.payTags:[] };
             if (editId) store.appointments = store.appointments.map(a => String(a.id) === String(editId) ? data : a);
             else {
                 store.appointments.push(data);
-                // 快存新顧客邏輯 [cite: 2026-03-01]
-                if(!store.clients.find(c => (c.n||c.name) === res.n)) store.clients.push({ n: res.n, p: res.p, lastSty: res.styId, bm: '', bd: '', note: res.note });
+                // 鋼鐵執行：勾選且不存在時快存 [cite: 2026-03-01]
+                if(res.saveCli && !store.clients.find(c => (c.n||c.name) === res.n)) {
+                    store.clients.push({ n: res.n, p: res.p, lastSty: res.styId, bm: '', bd: '', note: res.note });
+                }
             }
             saveS(); renderDay(res.d);
+            if(document.getElementById('pg-cli').classList.contains('active')) renderCli();
         }
     }
 
