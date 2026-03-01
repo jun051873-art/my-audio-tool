@@ -96,10 +96,23 @@
     <div class="content-scroll"><div class="client-grid-container" id="cli-list"></div></div>
 </div>
 
-<div id="pg-set" class="page">
-    <div class="header"><div style="font-size: 2.6rem; font-weight: 900;">設定</div></div>
-    <div class="content-scroll" style="padding:0 45px;" id="set-content-container"></div>
-</div>
+<<div id="pg-set" class="page">
+        <div class="header"><div style="font-size: 2.6rem; font-weight: 900;">設定</div></div>
+        <div class="content-scroll" style="padding:0 45px;" id="set-content-container"></div>
+    </div>
+
+    <div id="pg-day" class="page">
+        <div class="header">
+            <div style="display:flex; align-items:center; gap:25px;">
+                <i class="fas fa-chevron-left luxe-btn" style="border:none;" onclick="showP('pg-res')"></i>
+                <i class="fas fa-chevron-left luxe-btn" onclick="shiftDay(-1)"></i>
+                <div id="day-title" style="font-weight:900; font-size:2rem;"></div>
+                <i class="fas fa-chevron-right luxe-btn" onclick="shiftDay(1)"></i>
+            </div>
+            <div class="luxe-btn" onclick="goToday()">今天</div>
+        </div>
+        <div class="lane-container" id="day-lanes"></div>
+    </div>
 
 <button class="fab" onclick="popBooking()"><i class="fas fa-plus"></i></button>
 
