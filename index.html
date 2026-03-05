@@ -141,8 +141,9 @@
         if(!GAS_URL) return;
         if(isManual) Swal.showLoading(); 
         try {
-            // 加入 cache: 'no-cache' 確保抓到的是 3 月 5 號最新的資料
-            const response = await fetch(GAS_URL, { cache: 'no-cache' });
+            // 在網址後面加一個隨機的時間數字，強迫 GitHub 抓最新的 3 月 5 號資料
+            const finalUrl = GAS_URL + "?t=" + Date.now();
+            const response = await fetch(finalUrl);
             const cloudData = await response.json();
             
             if (cloudData && (cloudData.appointments || cloudData.stylists)) {
@@ -153,8 +154,7 @@
             }
         } catch (e) {
             console.error("同步失敗", e);
-            // 如果還是失敗，代表 GAS 網址可能被 GitHub 擋住
-            if(isManual) Swal.fire('同步失敗', '請確認 GAS 部署權限為「所有人」', 'error');
+            if(isManual) Swal.fire('同步失敗', '請確認網址結尾是 /exec', 'error');
         }
     }
 
