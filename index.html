@@ -174,16 +174,6 @@
                 body: JSON.stringify(store) 
             }); 
         } catch(e) { console.error("傳送失敗", e); } 
-    }ｓ
-
-    function showP(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        if(id.includes('res')) initMonth(); 
-        else if(id==='pg-cli') { fillStySelect(); renderCli(); } 
-        else if(id==='pg-set') renderSet(); 
-        else if(id==='pg-day') renderDay(curD.toLocaleDateString('sv'));
     }
 
     // 啟動 App 時自動抓取雲端最新資料
