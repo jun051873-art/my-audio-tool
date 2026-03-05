@@ -141,20 +141,20 @@
         if(!GAS_URL) return;
         if(isManual) Swal.showLoading(); 
         try {
-            const response = await fetch(GAS_URL);
+            // 加入 cache: 'no-cache' 確保抓到的是 3 月 5 號最新的資料
+            const response = await fetch(GAS_URL, { cache: 'no-cache' });
             const cloudData = await response.json();
-            // 確保抓到的是有效的預約資料
-            if (cloudData && cloudData.appointments) {
+            
+            if (cloudData && (cloudData.appointments || cloudData.stylists)) {
                 store = cloudData;
                 localStorage.setItem('SALON_LOCK_V318', JSON.stringify(store));
-                // 重新渲染畫面
-                initMonth(); renderCli(); fillStySelect();
-                if(document.getElementById('pg-day').classList.contains('active')) renderDay(curD.toLocaleDateString('sv'));
+                initMonth(); renderCli(); fillStySelect(); renderSet();
                 if(isManual) Swal.fire({ icon: 'success', title: '雲端同步成功', timer: 1000, showConfirmButton: false });
             }
         } catch (e) {
-            console.error("同步抓取失敗", e);
-            if(isManual) Swal.fire('同步失敗', '請檢查網路連線', 'error');
+            console.error("同步失敗", e);
+            // 如果還是失敗，代表 GAS 網址可能被 GitHub 擋住
+            if(isManual) Swal.fire('同步失敗', '請確認 GAS 部署權限為「所有人」', 'error');
         }
     }
 
@@ -166,8 +166,15 @@
 
     async function syncToGSheet() { 
         if(!store.gSheetUrl) return;
-        try { await fetch(store.gSheetUrl, { method: 'POST', mode: 'no-cors', body: JSON.stringify(store) }); } catch(e) {} 
-    }
+        try { 
+            await fetch(store.gSheetUrl, { 
+                method: 'POST', 
+                mode: 'no-cors', // 鎖死這行，這是 GitHub 通往 Google 的通行證
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify(store) 
+            }); 
+        } catch(e) { console.error("傳送失敗", e); } 
+    }ｓ
 
     function showP(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
