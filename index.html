@@ -127,12 +127,12 @@
     let curD = new Date();
     let tempTags = [];
     let cliKw = "";
-    // 鎖死你的 Google Apps Script 雙向同步網址 [cite: 2026-03-01]
-   const GAS_URL = "https://script.google.com/macros/s/AKfycbybDgSJuk48LPv4lCIFqiAv3vL3XkK1DdObhw6agADIY4J2GqQiW0Zt3IP35hrIbMVT/exec"; 
+  // 鎖死你的 Google Apps Script 雙向同步網址 [cite: 2026-03-05]
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbybDgSJuk48LPv4lCIFqiAv3vL3XkK1DdObhw6agADIY4J2GqQiW0Zt3IP35hrIbMVT/exec";
+    
     let store = JSON.parse(localStorage.getItem('SALON_LOCK_V318')) || {
         startH: "11:00", endH: "19:00", offColor: "#e5e5ea", gSheetUrl: GAS_URL,
-        stylists: [{id: 1, name: 'Tonny', color: '#1d1d1f'}, {id: 2, name: 'Apple', color: '#D4AF37'}],
-        tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: []
+        stylists: [{id: 1, name: 'Tonny', color: '#1d1d1f'}, {id: 2, name: 'Apple', color: '#D4AF37'}],      tags: [{id: 1, name: '剪髮'}, {id: 2, name: '洗髮'}], appointments: [], clients: [], offDays: []
     };
     if(!store.gSheetUrl || store.gSheetUrl !== GAS_URL) store.gSheetUrl = GAS_URL;
 
