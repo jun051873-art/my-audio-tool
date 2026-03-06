@@ -228,7 +228,14 @@
         else { a.payTags.push(code); note = (note + " " + tagText).trim(); }
         a.note_full = note; saveS(); renderDay(ds);
     }
-
+// --- 新增：切換指定/不指定狀態 ---
+    function toggleVIP(id, ds) {
+        const a = store.appointments.find(x => String(x.id) === String(id));
+        if(!a) return;
+        a.isVIP = !a.isVIP; // 切換狀態
+        saveS(); // 同步到雲端與本地
+        renderDay(ds); // 立即刷新畫面
+    }
     function renderDay(ds) {
         const days = ['日','一','二','三','四','五','六'];
         document.getElementById('day-title').innerText = `${ds} (週${days[new Date(ds).getDay()]})`; 
@@ -251,8 +258,8 @@
                             <span class="tag-pill ${a.payTags?.includes('C')?'active-C':''}" onclick="event.stopPropagation(); togglePay('${a.id}','C','💰','現金','${ds}')">現</span>
                             <span class="tag-pill ${a.payTags?.includes('P')?'active-P':''}" onclick="event.stopPropagation(); togglePay('${a.id}','P','🔹','支付','${ds}')">支</span>
                             <span class="tag-pill ${a.payTags?.includes('S')?'active-S':''}" onclick="event.stopPropagation(); togglePay('${a.id}','S','📦','販賣','${ds}')">販</span>
-                        </div>`;
-                        return `<div class="apt-card ${a.done?'completed':''}" style="--c:${s.color}; margin-left:15px; width:calc(100% - 20px); padding:20px;">
+   <span class="tag-pill ${a.isVIP ? 'active-J' : ''}" style="border: 1px solid var(--gold); color: ${a.isVIP ? '#fff' : 'var(--gold)'}; margin-left: 5px;" onclick="event.stopPropagation(); toggleVIP('${a.id}','${ds}')">${a.isVIP ? '⭐ 指定' : '不指定'}</span>
+                </div>`;                     return `<div class="apt-card ${a.done?'completed':''}" style="--c:${s.color}; margin-left:15px; width:calc(100% - 20px); padding:20px;">
                             ${tagHtml}
                             <div style="position:absolute; right:15px; top:15px; display:flex; gap:12px; align-items:center;">
                                 <i class="fas fa-pen" style="color:#ccc; cursor:pointer;" onclick="event.stopPropagation(); popBooking('${a.n||a.name}','${a.p||a.phone}','${a.styId}','${a.id}')"></i>
