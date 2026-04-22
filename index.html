@@ -3,178 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>專屬空間 - 旗艦版數位保卡</title>
+    <title>專屬空間 - 數位保卡系統</title>
     <style>
         :root {
             --ios-bg: #f5f5f7;
-            --glass: rgba(255, 255, 255, 0.7);
+            --glass: rgba(255, 255, 255, 0.75);
             --accent: #007AFF;
             --danger: #FF3B30;
-            --card-shadow: 0 8px 32px rgba(0,0,0,0.08);
+            --success: #34C759;
         }
 
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: -apple-system, "SF Pro Display", sans-serif;
-            background: linear-gradient(135deg, #e0e0e2 0%, #f5f5f7 100%);
+            background: linear-gradient(160deg, #cfd9df 0%, #e2ebf0 100%);
             overflow: hidden; color: #1c1c1e;
         }
 
-        /* 頂部太流導航 */
         header {
             height: 70px; background: var(--glass); backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
             display: flex; justify-content: space-between; align-items: center;
             padding: 0 30px; border-bottom: 0.5px solid rgba(0,0,0,0.1);
-            position: relative; z-index: 100;
+            z-index: 100;
         }
 
-        .shop-brand { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; border: none; background: transparent; outline: none; }
+        .shop-brand { font-size: 22px; font-weight: 700; border: none; background: transparent; outline: none; }
 
-        .tab-bar {
-            display: flex; gap: 10px; background: rgba(0,0,0,0.05);
-            padding: 5px; border-radius: 12px;
-        }
-        .tab {
-            padding: 8px 20px; border-radius: 8px; cursor: pointer;
-            font-size: 14px; font-weight: 600; transition: all 0.3s; color: #8e8e93;
-        }
+        .tab-bar { display: flex; gap: 8px; background: rgba(0,0,0,0.05); padding: 5px; border-radius: 12px; }
+        .tab { padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; color: #8e8e93; transition: 0.3s; }
         .tab.active { background: white; color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
-        /* 主容器 */
-        #main-slider {
-            display: flex; height: calc(100vh - 70px);
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-        }
+        #main-slider { display: flex; height: calc(100vh - 70px); transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
 
         .page {
-            min-width: 100vw; height: 100%; overflow-y: auto;
-            padding: 30px; box-sizing: border-box;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            align-content: start; gap: 25px;
+            min-width: 100vw; height: 100%; overflow-y: auto; padding: 30px; box-sizing: border-box;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); align-content: start; gap: 25px;
         }
 
-        /* 太流小卡片 */
+        /* 玻璃卡片 */
         .card {
-            background: var(--glass); border-radius: 24px; padding: 20px;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5);
-            box-shadow: var-card-shadow; transition: transform 0.3s;
-            position: relative;
+            background: var(--glass); border-radius: 28px; padding: 22px;
+            backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06); position: relative;
         }
-        .card:hover { transform: translateY(-5px); }
 
-        .card-menu { position: absolute; top: 15px; right: 15px; cursor: pointer; color: #c7c7cc; }
+        .card-edit-btn { position: absolute; top: 20px; right: 20px; font-size: 18px; cursor: pointer; color: #c7c7cc; }
 
-        .cust-header { margin-bottom: 15px; }
-        .name { font-size: 20px; font-weight: 700; margin: 0; }
-        .meta { font-size: 13px; color: #8e8e93; margin-top: 4px; display: flex; gap: 10px; }
-
-        /* 格數排列 */
-        .grid {
-            display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
-            margin: 15px 0;
-        }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 18px 0; }
         .cell {
-            aspect-ratio: 1; background: rgba(255,255,255,0.5); border-radius: 12px;
-            border: 0.5px solid rgba(0,0,0,0.05); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; cursor: pointer; font-size: 12px; font-weight: bold;
+            aspect-ratio: 1; background: rgba(255,255,255,0.6); border-radius: 14px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            cursor: pointer; border: 0.5px solid rgba(0,0,0,0.03);
         }
-        .cell img { width: 100%; height: 70%; object-fit: contain; }
-        .cell .ts { font-size: 6px; color: #aeaeae; transform: scale(0.8); line-height: 1; }
+        .cell img { width: 90%; height: 60%; object-fit: contain; }
+        .cell .ts { font-size: 8px; color: #aeaeae; transform: scale(0.85); white-space: nowrap; }
 
-        /* 浮層 (Modals) */
+        /* 彈窗系統 */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.3); backdrop-filter: blur(15px);
+            background: rgba(0,0,0,0.25); backdrop-filter: blur(20px);
             display: none; justify-content: center; align-items: center; z-index: 1000;
         }
-        .modal-content {
-            background: white; border-radius: 28px; padding: 25px; width: 90%; max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        .modal {
+            background: white; border-radius: 32px; padding: 30px; width: 90%; max-width: 550px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.15);
         }
 
-        input, select, textarea {
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px;
-            border: 1px solid #e5e5ea; background: #f5f5f7; box-sizing: border-box;
+        input, textarea {
+            width: 100%; padding: 14px; margin: 8px 0; border-radius: 14px;
+            border: 1px solid #efeff4; background: #f9f9fb; box-sizing: border-box; font-size: 16px;
         }
 
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { flex: 1; padding: 14px; border-radius: 14px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-group { display: flex; gap: 12px; margin-top: 25px; }
+        .btn { flex: 1; padding: 16px; border-radius: 16px; border: none; font-weight: 600; cursor: pointer; font-size: 16px; }
         .btn-main { background: var(--accent); color: white; }
         .btn-ghost { background: #f2f2f7; color: #1c1c1e; }
         .btn-danger { background: var(--danger); color: white; }
 
-        /* 簽名畫布專用 */
-        canvas { background: #f9f9f9; border-radius: 15px; width: 100%; height: 250px; touch-action: none; border: 1px solid #efefef; }
+        /* 雙簽名區域 */
+        .sig-row { display: flex; gap: 15px; margin-top: 10px; }
+        .sig-box { flex: 1; text-align: center; }
+        canvas { background: #f9f9fb; border-radius: 18px; width: 100%; height: 180px; touch-action: none; border: 1px solid #efeff4; }
+        .sig-label { font-size: 13px; color: #8e8e93; margin-bottom: 8px; font-weight: 500; }
     </style>
 </head>
 <body>
 
 <header>
-    <input type="text" class="shop-brand" value="EXCLUSIVE SPACE">
+    <div class="shop-brand">EXCLUSIVE SPACE</div>
     <div class="tab-bar" id="tab-bar"></div>
     <div style="display:flex; gap:10px;">
-        <button class="btn btn-ghost" style="padding: 8px 15px;" onclick="showPageModal()">＋分頁</button>
-        <button class="btn btn-main" style="padding: 8px 15px;" onclick="showCardModal()">＋新增卡片</button>
+        <button class="btn btn-ghost" style="padding: 10px 20px;" onclick="showPageModal()">＋ 分類</button>
+        <button class="btn btn-main" style="padding: 10px 20px;" onclick="showCardModal()">＋ 售出新卡</button>
     </div>
 </header>
 
 <div id="main-slider"></div>
 
 <div id="card-modal" class="overlay">
-    <div class="modal-content">
-        <h2 id="modal-title">新增保卡</h2>
-        <input type="text" id="in-name" placeholder="客人姓名">
-        <input type="text" id="in-phone" placeholder="電話">
+    <div class="modal">
+        <h2 id="modal-title" style="margin:0 0 20px 0; letter-spacing:-1px;">服務卡細節設定</h2>
+        <input type="text" id="in-name" placeholder="顧客姓名">
+        <input type="text" id="in-phone" placeholder="聯絡電話">
         <div style="display:flex; gap:10px;">
-            <input type="number" id="in-stamps" placeholder="總格數 (4-15)" min="4" max="15">
+            <input type="number" id="in-stamps" placeholder="總服務格數">
             <input type="text" id="in-birthday" placeholder="生日 (MM/DD)">
         </div>
-        <textarea id="in-note" placeholder="備註（喜好、特殊要求...）"></textarea>
+        <textarea id="in-note" placeholder="顧客偏好與備註事項" rows="3"></textarea>
         <div class="btn-group">
-            <button class="btn btn-ghost" onclick="hideModal('card-modal')">取消</button>
-            <button class="btn btn-danger" id="del-btn" style="display:none" onclick="deleteCard()">刪除卡片</button>
-            <button class="btn btn-main" onclick="saveCard()">儲存</button>
+            <button class="btn btn-ghost" onclick="hideModal('card-modal')">返回</button>
+            <button class="btn btn-danger" id="del-btn" style="display:none" onclick="deleteCard()">註銷此卡</button>
+            <button class="btn btn-main" onclick="saveCard()">確認存檔</button>
         </div>
     </div>
 </div>
 
 <div id="page-modal" class="overlay">
-    <div class="modal-content">
-        <h2>分頁管理</h2>
-        <input type="text" id="in-page-title" placeholder="分頁名稱（如：洗髮卡）">
+    <div class="modal">
+        <h2>新增服務分類</h2>
+        <input type="text" id="in-page-title" placeholder="例如：深層護髮系列">
         <div class="btn-group">
-            <button class="btn btn-ghost" onclick="hideModal('page-modal')">關閉</button>
-            <button class="btn btn-main" onclick="addPage()">確認新增</button>
+            <button class="btn btn-ghost" onclick="hideModal('page-modal')">取消</button>
+            <button class="btn btn-main" onclick="addPage()">建立分頁</button>
         </div>
     </div>
 </div>
 
 <div id="sig-modal" class="overlay">
-    <div class="modal-content">
-        <h2 style="margin-top:0">顧客核銷簽名</h2>
-        <canvas id="sig-canvas"></canvas>
+    <div class="modal" style="max-width:650px;">
+        <h2 style="margin:0 0 5px 0;">服務核銷確認</h2>
+        <p style="color:#8e8e93; font-size:14px; margin-bottom:20px;">請雙方簽署以確保服務權益</p>
+        
+        <div class="sig-row">
+            <div class="sig-box">
+                <div class="sig-label">顧客簽名</div>
+                <canvas id="canvas-cust"></canvas>
+            </div>
+            <div class="sig-box">
+                <div class="sig-label">經辦技術員</div>
+                <canvas id="canvas-staff"></canvas>
+            </div>
+        </div>
+
         <div class="btn-group">
             <button class="btn btn-ghost" onclick="hideModal('sig-modal')">取消</button>
-            <button class="btn btn-ghost" onclick="clearCanvas()">重寫</button>
-            <button class="btn btn-main" onclick="confirmSignature()">確認存檔</button>
+            <button class="btn btn-ghost" onclick="clearBoth()">重寫</button>
+            <button class="btn btn-main" onclick="confirmSignature()">確認服務核銷</button>
         </div>
     </div>
 </div>
 
 <script>
     let db = [
-        { title: '護髮卡', cards: [{ id: 1, name: '陳小美', phone: '0912-345', stamps: 10, birthday: '05/20', note: '不喜歡太涼的產品', signs: {} }] },
-        { title: '洗髮卡', cards: [] }
+        { title: '精選護髮', cards: [{ name: '陳小美', phone: '0912-345-678', stamps: 10, birthday: '05/20', note: '不喜歡涼感感產品', signs: {} }] },
+        { title: '洗髮套裝', cards: [] }
     ];
     let curIdx = 0;
-    let editTarget = null; // { pIdx, cIdx }
-    let sigTarget = null; // { pIdx, cIdx, sIdx }
+    let editTarget = null; 
+    let sigTarget = null; 
 
     const slider = document.getElementById('main-slider');
     const tabBar = document.getElementById('tab-bar');
 
-    // 初始化與渲染
     function render() {
         tabBar.innerHTML = '';
         slider.innerHTML = '';
@@ -190,20 +180,20 @@
             page.cards.forEach((card, cIdx) => {
                 pg.innerHTML += `
                     <div class="card">
-                        <div class="card-menu" onclick="showEditCard(${pIdx}, ${cIdx})">•••</div>
-                        <div class="cust-header">
-                            <div class="name">${card.name}</div>
-                            <div class="meta"><span>📞 ${card.phone}</span> <span>🎂 ${card.birthday}</span></div>
+                        <div class="card-edit-btn" onclick="showEditCard(${pIdx}, ${cIdx})">⚙️</div>
+                        <div style="margin-bottom:15px;">
+                            <div style="font-size:22px; font-weight:800;">${card.name}</div>
+                            <div style="font-size:13px; color:#8e8e93; margin-top:4px;">📞 ${card.phone} | 🎂 ${card.birthday}</div>
                         </div>
-                        <div class="grid" style="grid-template-columns: repeat(5, 1fr)">
+                        <div class="grid">
                             ${Array.from({length: card.stamps}).map((_, i) => {
                                 const s = card.signs[i];
                                 return `<div class="cell" onclick="openSig(${pIdx}, ${cIdx}, ${i})">
-                                    ${s ? `<img src="${s.img}"><div class="ts">${s.time}</div>` : i+1}
+                                    ${s ? `<img src="${s.custImg}"><div class="ts">${s.time}</div>` : i+1}
                                 </div>`;
                             }).join('')}
                         </div>
-                        <div style="font-size:12px; color:#8e8e93;">${card.note}</div>
+                        <div style="font-size:12px; color:#aeaeb2; line-height:1.4;">${card.note || '尚無備註'}</div>
                     </div>
                 `;
             });
@@ -217,17 +207,15 @@
         Array.from(tabBar.children).forEach((t, i) => t.className = `tab ${i === curIdx ? 'active' : ''}`);
     }
 
-    // 分頁功能
     function showPageModal() { document.getElementById('page-modal').style.display = 'flex'; }
     function addPage() {
         const title = document.getElementById('in-page-title').value;
         if(title) { db.push({ title, cards: [] }); render(); hideModal('page-modal'); }
     }
 
-    // 卡片功能 (增刪改)
     function showCardModal() {
         editTarget = null;
-        document.getElementById('modal-title').innerText = "新增保卡";
+        document.getElementById('modal-title').innerText = "售出新服務卡";
         document.getElementById('del-btn').style.display = 'none';
         ['in-name', 'in-phone', 'in-stamps', 'in-birthday', 'in-note'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('card-modal').style.display = 'flex';
@@ -236,7 +224,7 @@
     function showEditCard(pIdx, cIdx) {
         editTarget = { pIdx, cIdx };
         const c = db[pIdx].cards[cIdx];
-        document.getElementById('modal-title').innerText = "修改保卡";
+        document.getElementById('modal-title').innerText = "會員服務設定";
         document.getElementById('del-btn').style.display = 'block';
         document.getElementById('in-name').value = c.name;
         document.getElementById('in-phone').value = c.phone;
@@ -248,7 +236,7 @@
 
     function saveCard() {
         const data = {
-            name: document.getElementById('in-name').value,
+            name: document.getElementById('in-name').value || '未命名',
             phone: document.getElementById('in-phone').value,
             stamps: parseInt(document.getElementById('in-stamps').value) || 10,
             birthday: document.getElementById('in-birthday').value,
@@ -261,55 +249,84 @@
     }
 
     function deleteCard() {
-        if(confirm("確定要刪除這張卡片嗎？資料無法找回。")) {
+        if(confirm("確定要註銷此卡片嗎？")) {
             db[editTarget.pIdx].cards.splice(editTarget.cIdx, 1);
             render(); hideModal('card-modal');
         }
     }
 
-    // 簽名系統
-    const canvas = document.getElementById('sig-canvas');
-    const ctx = canvas.getContext('2d');
+    // 雙簽名邏輯
+    const cCust = document.getElementById('canvas-cust');
+    const cStaff = document.getElementById('canvas-staff');
+    const ctxCust = cCust.getContext('2d');
+    const ctxStaff = cStaff.getContext('2d');
     let drawing = false;
+    let activeCtx = null;
 
     function openSig(pIdx, cIdx, sIdx) {
-        if(db[pIdx].cards[cIdx].signs[sIdx]) return; // 已簽名則跳過
+        if(db[pIdx].cards[cIdx].signs[sIdx]) return;
         sigTarget = { pIdx, cIdx, sIdx };
         document.getElementById('sig-modal').style.display = 'flex';
-        canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
-        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+        [cCust, cStaff].forEach(c => {
+            c.width = c.offsetWidth; c.height = c.offsetHeight;
+            const ctx = c.getContext('2d');
+            ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.strokeStyle = '#1c1c1e';
+        });
+        clearBoth();
     }
 
     function confirmSignature() {
         const now = new Date();
         const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes()}`;
         db[sigTarget.pIdx].cards[sigTarget.cIdx].signs[sigTarget.sIdx] = {
-            img: canvas.toDataURL(),
+            custImg: cCust.toDataURL(),
+            staffImg: cStaff.toDataURL(), // 這裡也存下了店員簽名，以後爭議可調閱
             time: timeStr
         };
         render(); hideModal('sig-modal');
     }
 
-    function hideModal(id) { document.getElementById(id).style.display = 'none'; }
-    function clearCanvas() { ctx.clearRect(0,0,canvas.width, canvas.height); }
+    function clearBoth() {
+        ctxCust.clearRect(0,0,cCust.width, cCust.height);
+        ctxStaff.clearRect(0,0,cStaff.width, cStaff.height);
+    }
 
-    // 畫筆事件
-    canvas.onmousedown = canvas.ontouchstart = (e) => { 
-        drawing = true; ctx.beginPath(); 
-        const p = getPos(e); ctx.moveTo(p.x, p.y);
-    };
-    canvas.onmousemove = canvas.ontouchmove = (e) => {
+    function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // 簽名事件處理 (多畫布支援)
+    function setupCanvas(canvas, ctx) {
+        canvas.addEventListener('mousedown', (e) => start(e, ctx, canvas));
+        canvas.addEventListener('touchstart', (e) => start(e, ctx, canvas));
+        canvas.addEventListener('mousemove', (e) => move(e, ctx, canvas));
+        canvas.addEventListener('touchmove', (e) => move(e, ctx, canvas));
+        window.addEventListener('mouseup', () => drawing = false);
+        window.addEventListener('touchend', () => drawing = false);
+    }
+
+    function start(e, ctx, canvas) {
+        drawing = true;
+        ctx.beginPath();
+        const p = getPos(e, canvas);
+        ctx.moveTo(p.x, p.y);
+    }
+
+    function move(e, ctx, canvas) {
         if(!drawing) return;
-        const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+        const p = getPos(e, canvas);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
         e.preventDefault();
-    };
-    canvas.onmouseup = canvas.ontouchend = () => drawing = false;
-    function getPos(e) {
+    }
+
+    function getPos(e, canvas) {
         const rect = canvas.getBoundingClientRect();
         const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
         const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
         return { x, y };
     }
+
+    setupCanvas(cCust, ctxCust);
+    setupCanvas(cStaff, ctxStaff);
 
     render();
 </script>
