@@ -36,9 +36,8 @@
             font-size: 26px; font-weight: 900; letter-spacing: -1.5px; 
             background: linear-gradient(to right, #1c1c1e, #666); 
             -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            margin-right: 40px; cursor: pointer; transition: opacity 0.2s;
+            margin-right: 40px; cursor: pointer;
         }
-        .shop-id:active { opacity: 0.5; }
 
         .controls-group { flex: 1; max-width: 500px; display: flex; gap: 10px; margin-right: 20px; }
         
@@ -63,10 +62,11 @@
         .tab { 
             padding: 10px 22px; border-radius: 18px; cursor: pointer; 
             font-size: 15px; font-weight: 700; color: rgba(0,0,0,0.4); 
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
             background: rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;
         }
         .tab.active { background: #fff; color: var(--accent); box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .tab-set-btn { font-size: 14px; opacity: 0.3; }
 
         .add-tab-btn { 
             width: 42px; height: 42px; border-radius: 15px; 
@@ -75,8 +75,9 @@
             cursor: pointer; font-weight: bold; font-size: 22px; 
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .add-tab-btn:hover { background: #fff; transform: rotate(90deg) scale(1.1); }
 
-        #main-slider { display: flex; height: calc(100vh - 90px); transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        #main-slider { display: flex; height: calc(100vh - 90px); transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
         .page { 
             min-width: 100vw; height: 100%; overflow-y: scroll; 
             padding: 40px; box-sizing: border-box; display: grid; 
@@ -84,10 +85,11 @@
             align-content: start; gap: 30px; -webkit-overflow-scrolling: touch;
         }
 
-        .card { background: var(--glass-white); border-radius: 42px; padding: 30px; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: var(--blur); box-shadow: 0 25px 50px rgba(0,0,0,0.06); position: relative; transition: 0.3s; }
+        .card { background: var(--glass-white); border-radius: 42px; padding: 30px; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: var(--blur); box-shadow: 0 25px 50px rgba(0,0,0,0.06); position: relative; }
         .card-dots { position: absolute; top: 30px; right: 30px; width: 35px; height: 35px; background: rgba(255,255,255,0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; gap: 3px; }
+        .card-dots span { width: 4px; height: 4px; background: #1c1c1e; border-radius: 50%; }
         .card-name { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1.5px; }
-        .card-sub { font-size: 15px; color: rgba(0,0,0,0.5); font-weight: 600; }
+        .card-sub { font-size: 15px; color: rgba(0,0,0,0.5); font-weight: 600; line-height: 1.6; }
 
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 25px 0; }
         .cell { aspect-ratio: 1; background: rgba(255,255,255,0.4); border-radius: 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; font-size: 16px; font-weight: 800; color: rgba(0,0,0,0.2); overflow: hidden; }
@@ -95,15 +97,14 @@
         .cell img { width: 85%; height: 60%; object-fit: contain; }
         .cell .time { font-size: 9px; color: #8e8e93; transform: scale(0.8); margin-top: 4px; }
 
-        .add-placeholder { border: 3px dashed rgba(255,255,255,0.6); border-radius: 42px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: rgba(0,0,0,0.3); font-weight: 800; cursor: pointer; min-height: 350px; }
+        .add-placeholder { border: 3px dashed rgba(255,255,255,0.6); border-radius: 42px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: rgba(0,0,0,0.3); font-weight: 800; cursor: pointer; min-height: 350px; transition: 0.4s; }
 
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); backdrop-filter: blur(35px); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal { background: rgba(255, 255, 255, 0.92); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
+        .modal { background: rgba(255, 255, 255, 0.9); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
 
         input, select, textarea { width: 100%; padding: 18px; margin: 12px 0; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); font-size: 16px; font-weight: 600; outline: none; box-sizing: border-box; }
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
-        .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; transition: transform 0.2s; }
-        .btn:active { transform: scale(0.95); }
+        .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: rgba(0,0,0,0.05); color: #1c1c1e; }
@@ -117,7 +118,7 @@
     <div class="shop-id" id="shop-name-display" onclick="changeShopName()">EXCLUSIVE SPACE</div>
     <div class="controls-group">
         <div class="search-container">
-            <input type="text" id="global-search" placeholder="搜尋姓名或手機..." oninput="window.render()">
+            <input type="text" id="global-search" placeholder="姓名或手機..." oninput="window.render()">
         </div>
         <div class="filter-container">
             <select id="designer-filter" onchange="window.render()">
@@ -131,7 +132,6 @@
 
 <div id="main-slider"></div>
 
-<!-- 卡片編輯 Modal -->
 <div id="card-modal" class="overlay">
     <div class="modal">
         <h2 style="font-weight: 900; letter-spacing: -1px;">保卡設定</h2>
@@ -143,46 +143,44 @@
         </div>
         <select id="in-designer"></select>
         <div style="margin-top:20px;">
-            <p style="font-size:14px; font-weight:800; color:#8e8e93; margin-bottom:12px;">設計師授權</p>
+            <p style="font-size:14px; font-weight:800; color:#8e8e93; margin-bottom:12px;">設計師簽署</p>
             <div id="staff-sig-box" onclick="openSignature('staff')" style="width:140px; height:75px; background:rgba(255,255,255,0.6); border-radius:20px; display:flex; justify-content:center; align-items:center; cursor:pointer; overflow:hidden; border: 1px solid rgba(0,0,0,0.05);">
                 <span style="font-size:13px; color:#c7c7cc;">點擊簽名</span>
             </div>
         </div>
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="hideModal('card-modal')">返回</button>
-            <button class="btn btn-danger" id="delete-card-btn" onclick="deleteCurrentCard()">刪除卡片</button>
-            <button class="btn btn-primary" onclick="saveCard()">確認存檔</button>
+            <button class="btn btn-danger" id="delete-card-btn" style="display:none;" onclick="deleteCurrentCard()">刪除卡片</button>
+            <button class="btn btn-primary" onclick="saveCard()">存檔</button>
         </div>
     </div>
 </div>
 
-<!-- 分頁設定 Modal -->
 <div id="tab-modal" class="overlay">
     <div class="modal">
-        <h2>分頁與設計師設定</h2>
+        <h2>分頁設定</h2>
         <input type="text" id="tab-name-input" placeholder="分頁名稱">
-        <textarea id="designer-list-input" rows="3" placeholder="設計師名單 (多個請用逗號隔開)"></textarea>
+        <textarea id="designer-list-input" rows="2" placeholder="設計師名單 (以逗號隔開)"></textarea>
         <div id="delete-zone" style="border-top: 1px solid rgba(0,0,0,0.05); margin-top: 20px; padding-top: 20px; display: none;">
-            <p style="font-size: 14px; font-weight: 800; color: var(--danger);">🚨 危險區域</p>
-            <input type="password" id="delete-password" placeholder="輸入 8888 刪除分頁">
-            <button class="btn btn-danger" style="width:100%;" onclick="secureDelete()">永久刪除此分頁</button>
+            <p style="font-size: 14px; font-weight: 800; color: var(--danger);">🚨 刪除頁面安全防護</p>
+            <input type="password" id="delete-password" placeholder="輸入 8888 刪除">
+            <button class="btn btn-danger" style="width:100%;" onclick="secureDelete()">永久刪除頁面</button>
         </div>
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="hideModal('tab-modal')">取消</button>
-            <button class="btn btn-primary" onclick="saveTab()">儲存設定</button>
+            <button class="btn btn-primary" onclick="saveTab()">儲存</button>
         </div>
     </div>
 </div>
 
-<!-- 簽名 Modal -->
 <div id="sig-modal" class="overlay">
     <div class="modal" style="max-width:650px;">
-        <h2 id="sig-title">電子簽章</h2>
+        <h2 id="sig-title">電子簽署</h2>
         <canvas id="sig-canvas"></canvas>
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="hideModal('sig-modal')">取消</button>
             <button class="btn btn-secondary" onclick="clearCanvas()">重寫</button>
-            <button class="btn btn-primary" onclick="confirmSignature()">確認簽署</button>
+            <button class="btn btn-primary" onclick="confirmSignature()">確認</button>
         </div>
     </div>
 </div>
@@ -247,17 +245,15 @@
         window.db_data.forEach((page, pIdx) => {
             const t = document.createElement('div');
             t.className = `tab ${pIdx === curIdx ? 'active' : ''}`;
-            t.innerHTML = `<span>${page.title}</span>`;
+            const txt = document.createElement('span');
+            txt.innerText = page.title;
+            txt.onclick = () => { curIdx = pIdx; window.updateSlider(); };
+            t.appendChild(txt);
             if (!page.isArchive) {
-                t.onclick = (e) => {
-                    if (e.target.tagName === 'SPAN' || e.target.className === 'tab') {
-                        curIdx = pIdx; window.updateSlider();
-                    }
-                };
-                // 加入長按或雙擊進入設定
-                t.ondblclick = () => window.editTab(pIdx);
-            } else {
-                t.onclick = () => { curIdx = pIdx; window.updateSlider(); };
+                const setBtn = document.createElement('span');
+                setBtn.innerHTML = '⚙'; setBtn.className = 'tab-set-btn';
+                setBtn.onclick = (e) => { e.stopPropagation(); window.editTab(pIdx); };
+                t.appendChild(setBtn);
             }
             bar.appendChild(t);
 
@@ -299,14 +295,6 @@
         window.updateSlider();
     }
 
-    window.changeShopName = async function() {
-        const current = document.getElementById('shop-name-display').innerText;
-        const n = prompt("請輸入自定義店名：", current);
-        if(n && n !== current) {
-            await setDoc(doc(db, "config", "salon_settings"), { shop_name: n }, { merge: true });
-        }
-    }
-
     window.showCardEdit = function(pIdx, cIdx) {
         cardEditTarget = (cIdx !== null) ? { pIdx, cIdx } : null;
         document.getElementById('delete-card-btn').style.display = (cIdx !== null) ? 'block' : 'none';
@@ -346,20 +334,17 @@
         const usedCount = Object.keys(card.signs || {}).length;
         if (usedCount >= card.stamps) {
             setTimeout(async () => {
-                alert(`🎊 顧客 ${card.name} 護髮卡已簽滿！系統將自動移動至歸檔。`);
+                alert(`🎊 顧客 ${card.name} 護髮完成！卡片已自動歸檔。`);
                 const movedCard = window.db_data[pIdx].cards.splice(cIdx, 1)[0];
                 const arch = window.db_data.find(p => p.isArchive);
-                if (arch) {
-                    if(!arch.cards) arch.cards = [];
-                    arch.cards.push(movedCard);
-                }
+                if (arch) { if(!arch.cards) arch.cards = []; arch.cards.push(movedCard); }
                 await saveCloud();
             }, 300);
         }
     }
 
     window.deleteCurrentCard = async function() {
-        if (cardEditTarget && confirm("🚨 確定永久刪除此卡片？資料將無法復原。")) {
+        if (cardEditTarget && confirm("🚨 確定永久刪除此卡片？")) {
             window.db_data[cardEditTarget.pIdx].cards.splice(cardEditTarget.cIdx, 1);
             await saveCloud(); window.hideModal('card-modal');
         }
@@ -410,6 +395,11 @@
     window.updateSlider = () => document.getElementById('main-slider').style.transform = `translateX(-${curIdx * 100}vw)`;
     window.hideModal = (id) => document.getElementById(id).style.display = 'none';
 
+    window.changeShopName = async function() {
+        const n = prompt("店名：", document.getElementById('shop-name-display').innerText);
+        if(n) await setDoc(doc(db, "config", "salon_settings"), { shop_name: n }, { merge: true });
+    }
+
     function updateDesignerSelects() {
         const el = document.getElementById('in-designer');
         if (el) el.innerHTML = window.designers.map(d => `<option value="${d}">${d}</option>`).join('');
@@ -425,22 +415,20 @@
     window.editTab = (idx) => { window.tabEditIdx = idx; document.getElementById('tab-name-input').value = window.db_data[idx].title; document.getElementById('designer-list-input').value = window.designers.join(','); document.getElementById('tab-modal').style.display = 'flex'; document.getElementById('delete-zone').style.display='block'; };
     
     window.saveTab = async function() {
-        const newTitle = document.getElementById('tab-name-input').value.trim();
-        const desList = document.getElementById('designer-list-input').value.replace(/，/g, ',').split(',').map(d=>d.trim()).filter(d=>d!=="");
-        
-        await setDoc(doc(db, "config", "salon_settings"), { designers: desList }, { merge: true });
+        const name = document.getElementById('tab-name-input').value.trim();
+        const des = document.getElementById('designer-list-input').value.split(',').map(d=>d.trim());
+        await setDoc(doc(db, "config", "salon_settings"), { designers: des }, { merge: true });
 
-        if(newTitle) {
+        if(name) {
             if(window.tabEditIdx !== null) {
-                const oldTitle = window.db_data[window.tabEditIdx].title;
-                if(oldTitle !== newTitle) {
-                    const oldData = {...window.db_data[window.tabEditIdx], title: newTitle};
-                    await setDoc(doc(db, "service_cards", newTitle), oldData);
-                    await deleteDoc(doc(db, "service_cards", oldTitle));
+                const old = window.db_data[window.tabEditIdx].title;
+                if(old !== name) {
+                    const pageData = {...window.db_data[window.tabEditIdx], title: name};
+                    await setDoc(doc(db, "service_cards", name), pageData);
+                    await deleteDoc(doc(db, "service_cards", old));
                 }
             } else {
-                const newOrder = window.db_data.length;
-                await setDoc(doc(db, "service_cards", newTitle), { title: newTitle, cards: [], order: newOrder });
+                await setDoc(doc(db, "service_cards", name), { title: name, cards: [], order: window.db_data.length });
             }
         }
         window.hideModal('tab-modal');
@@ -448,8 +436,7 @@
 
     window.secureDelete = async function() {
         if(document.getElementById('delete-password').value === "8888") {
-            const title = window.db_data[window.tabEditIdx].title;
-            await deleteDoc(doc(db, "service_cards", title));
+            await deleteDoc(doc(db, "service_cards", window.db_data[window.tabEditIdx].title));
             curIdx = 0; window.hideModal('tab-modal');
         } else alert("密碼錯誤");
     }
