@@ -329,15 +329,29 @@
         await saveCloud(); window.hideModal('card-modal');
     }
 
+    // --- 精準歸檔邏輯 ---
     async function autoArchive(pIdx, cIdx) {
         const card = window.db_data[pIdx].cards[cIdx];
         const usedCount = Object.keys(card.signs || {}).length;
         if (usedCount >= card.stamps) {
+            // 延遲一下讓使用者看清楚最後一格簽名
             setTimeout(async () => {
                 alert(`🎊 顧客 ${card.name} 護髮完成！卡片已自動歸檔。`);
+                
+                // 1. 從本地陣列中移除
                 const movedCard = window.db_data[pIdx].cards.splice(cIdx, 1)[0];
+                
+                // 2. 放入歸檔陣列
                 const arch = window.db_data.find(p => p.isArchive);
-                if (arch) { if(!arch.cards) arch.cards = []; arch.cards.push(movedCard); }
+                if (arch) {
+                    if(!arch.cards) arch.cards = [];
+                    arch.cards.push(movedCard);
+                }
+                
+                // 3. 強制刷新畫面（重要：確保卡片從護髮分頁消失）
+                window.render();
+                
+                // 4. 同步到雲端
                 await saveCloud();
             }, 300);
         }
@@ -386,10 +400,17 @@
             const targetCard = window.db_data[custSigTarget.p].cards[custSigTarget.c];
             if (!targetCard.signs) targetCard.signs = {};
             targetCard.signs[custSigTarget.s] = { img: url, time: timeStr };
-            await saveCloud();
-            if (!window.db_data[custSigTarget.p].isArchive) await autoArchive(custSigTarget.p, custSigTarget.c);
+            
+            // 先關閉簽名視窗
+            window.hideModal('sig-modal');
+            
+            // 判斷是否需要歸檔
+            if (!window.db_data[custSigTarget.p].isArchive) {
+                await autoArchive(custSigTarget.p, custSigTarget.c);
+            } else {
+                await saveCloud();
+            }
         }
-        window.hideModal('sig-modal');
     }
 
     window.updateSlider = () => document.getElementById('main-slider').style.transform = `translateX(-${curIdx * 100}vw)`;
