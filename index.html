@@ -15,24 +15,14 @@
             --danger: #FF3B30;
         }
 
-        /* 原生 App 感：禁用選取與彈跳 */
-        * { 
-            -webkit-tap-highlight-color: transparent; 
-            -webkit-touch-callout: none; 
-            user-select: none; 
-            box-sizing: border-box;
-        }
+        * { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; user-select: none; box-sizing: border-box; }
 
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: -apple-system, "SF Pro Display", "PingFang TC", sans-serif;
-            background: var(--liquid-bg); 
-            overflow: hidden; /* 禁止全體滾動，像 App 一樣 */
-            color: #1c1c1e;
-            position: fixed; /* 徹底鎖死瀏覽器彈跳 */
+            background: var(--liquid-bg); overflow: hidden; color: #1c1c1e; position: fixed;
         }
 
-        /* 隱藏所有滾動條 */
         ::-webkit-scrollbar { display: none; }
 
         header {
@@ -49,14 +39,25 @@
             margin-right: 40px; cursor: pointer;
         }
 
-        .search-container { flex: 1; max-width: 320px; position: relative; margin-right: 20px; }
+        /* 搜索與過濾容器 */
+        .controls-group { flex: 1; max-width: 500px; display: flex; gap: 10px; margin-right: 20px; }
+        
+        .search-container { position: relative; flex: 2; }
         .search-container input {
             width: 100%; background: rgba(255, 255, 255, 0.35); border: none;
             padding: 12px 20px 12px 45px; border-radius: 20px; outline: none;
             font-size: 16px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2);
-            user-select: text; /* 只有輸入框可以選文字 */
+            user-select: text;
         }
         .search-container::before { content: '🔍'; position: absolute; left: 15px; top: 12px; opacity: 0.4; }
+
+        .filter-container { flex: 1; }
+        .filter-container select {
+            width: 100%; background: rgba(255, 255, 255, 0.35); border: none;
+            padding: 10px 15px; border-radius: 20px; outline: none;
+            font-size: 14px; font-weight: 700; backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2); color: #1c1c1e;
+        }
 
         .tab-bar { display: flex; gap: 10px; margin-left: auto; align-items: center; }
         .tab { 
@@ -66,7 +67,7 @@
             background: rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;
         }
         .tab.active { background: #fff; color: var(--accent); box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateY(-2px); }
-        .tab-set-btn { font-size: 14px; opacity: 0.3; transition: 0.3s; }
+        .tab-set-btn { font-size: 14px; opacity: 0.3; }
 
         .add-tab-btn { 
             width: 42px; height: 42px; border-radius: 15px; 
@@ -79,11 +80,10 @@
 
         #main-slider { display: flex; height: calc(100vh - 90px); transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
         .page { 
-            min-width: 100vw; height: 100%; overflow-y: scroll; /* 頁面內滾動 */
+            min-width: 100vw; height: 100%; overflow-y: scroll; 
             padding: 40px; box-sizing: border-box; display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
-            align-content: start; gap: 30px; 
-            -webkit-overflow-scrolling: touch;
+            align-content: start; gap: 30px; -webkit-overflow-scrolling: touch;
         }
 
         .card { background: var(--glass-white); border-radius: 42px; padding: 30px; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: var(--blur); box-shadow: 0 25px 50px rgba(0,0,0,0.06); position: relative; }
@@ -112,12 +112,19 @@
         canvas { background: white; border-radius: 30px; width: 100%; height: 300px; touch-action: none; border: 1px solid rgba(0,0,0,0.05); }
     </style>
 </head>
-<body oncontextmenu="return false;"> <!-- 禁止右鍵菜單 -->
+<body oncontextmenu="return false;">
 
 <header>
     <div class="shop-id" id="shop-name-display" onclick="changeShopName()">EXCLUSIVE SPACE</div>
-    <div class="search-container">
-        <input type="text" id="global-search" placeholder="搜尋姓名、手機..." oninput="window.render()">
+    <div class="controls-group">
+        <div class="search-container">
+            <input type="text" id="global-search" placeholder="姓名或手機..." oninput="window.render()">
+        </div>
+        <div class="filter-container">
+            <select id="designer-filter" onchange="window.render()">
+                <option value="all">所有設計師</option>
+            </select>
+        </div>
     </div>
     <div class="tab-bar" id="tab-bar"></div>
     <div class="add-tab-btn" onclick="addNewTab()">＋</div>
@@ -128,7 +135,7 @@
 <!-- 卡片編輯 Modal -->
 <div id="card-modal" class="overlay">
     <div class="modal">
-        <h2 style="font-weight: 900; letter-spacing: -1px;">保卡設定</h2>
+        <h2 style="font-weight: 900;">保卡設定</h2>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <input type="text" id="in-name" placeholder="顧客姓名">
             <input type="text" id="in-phone" placeholder="電話">
@@ -232,10 +239,15 @@
         for (let p of defaults) await setDoc(doc(db, "service_cards", p.title), p);
     }
 
+    // --- 核心渲染函數 (加入過濾邏輯) ---
     window.render = function() {
         const bar = document.getElementById('tab-bar');
         const slider = document.getElementById('main-slider');
-        const searchTerm = (document.getElementById('global-search')?.value || "").toLowerCase();
+        
+        // 獲取目前的過濾條件
+        const searchTerm = (document.getElementById('global-search')?.value || "").toLowerCase().trim();
+        const filterDesigner = document.getElementById('designer-filter')?.value || "all";
+
         if (!bar || !slider) return;
         bar.innerHTML = ''; slider.innerHTML = '';
 
@@ -257,21 +269,33 @@
             const pg = document.createElement('div'); 
             pg.className = 'page';
             
-            const filteredCards = (page.cards || []).filter(c => 
-                c.name.toLowerCase().includes(searchTerm) || c.phone.includes(searchTerm)
-            );
+            // --- 執行過濾邏輯 ---
+            const cardsToDisplay = (page.cards || []).filter(card => {
+                // 1. 姓名/手機 搜索過濾
+                const matchesSearch = searchTerm === "" || 
+                                    card.name.toLowerCase().includes(searchTerm) || 
+                                    card.phone.includes(searchTerm);
+                
+                // 2. 設計師選擇過濾
+                const matchesDesigner = filterDesigner === "all" || card.designer === filterDesigner;
 
-            filteredCards.forEach((card, cIdx) => {
+                return matchesSearch && matchesDesigner;
+            });
+
+            cardsToDisplay.forEach((card, originalIdx) => {
+                // 這裡需要找到 card 在原本陣列中的正確 cIdx
+                const realCIdx = page.cards.findIndex(c => c === card);
+                
                 const cardEl = document.createElement('div');
                 cardEl.className = 'card';
                 cardEl.innerHTML = `
-                    <div class="card-dots" onclick="window.showCardEdit(${pIdx}, ${cIdx})"><span></span><span></span><span></span></div>
+                    <div class="card-dots" onclick="window.showCardEdit(${pIdx}, ${realCIdx})"><span></span><span></span><span></span></div>
                     <div class="card-name">${card.name}</div>
                     <div class="card-sub">📞 ${card.phone} | ✨ ${card.designer}</div>
                     <div class="grid">
                         ${Array.from({length: card.stamps}).map((_, i) => {
                             const s = (card.signs || {})[i];
-                            return `<div class="cell ${s?'used':''}" onclick="window.openSignature('cust', ${pIdx}, ${cIdx}, ${i})">
+                            return `<div class="cell ${s?'used':''}" onclick="window.openSignature('cust', ${pIdx}, ${realCIdx}, ${i})">
                                 ${s ? `<img src="${s.img}"><div class="time">${s.time}</div>` : i+1}
                             </div>`;
                         }).join('')}
@@ -280,7 +304,7 @@
                 pg.appendChild(cardEl);
             });
 
-            if (!page.isArchive) {
+            if (!page.isArchive && searchTerm === "" && filterDesigner === "all") {
                 const add = document.createElement('div');
                 add.className = 'add-placeholder';
                 add.innerHTML = `<span style="font-size:45px;">＋</span>售出新卡`;
@@ -381,8 +405,18 @@
         if(n) await setDoc(doc(db, "config", "salon_settings"), { shop_name: n }, { merge: true });
     }
     function updateDesignerSelects() {
+        // 更新編輯彈窗的下拉選單
         const el = document.getElementById('in-designer');
         if (el) el.innerHTML = window.designers.map(d => `<option value="${d}">${d}</option>`).join('');
+
+        // 更新頂部過濾器的下拉選單
+        const filterEl = document.getElementById('designer-filter');
+        if (filterEl) {
+            const currentVal = filterEl.value;
+            filterEl.innerHTML = '<option value="all">所有設計師</option>' + 
+                               window.designers.map(d => `<option value="${d}">${d}</option>`).join('');
+            filterEl.value = currentVal;
+        }
     }
     window.addNewTab = () => { tabEditIdx = null; document.getElementById('tab-modal').style.display = 'flex'; };
     window.editTab = (idx) => { tabEditIdx = idx; document.getElementById('tab-modal').style.display = 'flex'; document.getElementById('delete-zone').style.display='block'; };
