@@ -103,8 +103,8 @@
         .modal { background: rgba(255, 255, 255, 0.9); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
 
         input, select, textarea { width: 100%; padding: 18px; margin: 12px 0; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); font-size: 16px; font-weight: 600; outline: none; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap; }
-        .btn { flex: 1; min-width: 100px; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; }
+        .btn-group { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: rgba(0,0,0,0.05); color: #1c1c1e; }
@@ -132,7 +132,7 @@
 
 <div id="main-slider"></div>
 
-<!-- 卡片編輯 Modal -->
+<!-- 保卡設定 Modal -->
 <div id="card-modal" class="overlay">
     <div class="modal">
         <h2 style="font-weight: 900; letter-spacing: -1px;">保卡設定</h2>
@@ -152,13 +152,11 @@
         <div class="btn-group">
             <button class="btn btn-secondary" onclick="hideModal('card-modal')">返回</button>
             <button class="btn btn-danger" id="delete-card-btn" style="display:none;" onclick="deleteCurrentCard()">刪除卡片</button>
-            <button class="btn" id="archive-btn" style="display:none; background:#FF9500; color:white;" onclick="archiveCurrent()">歸檔</button>
             <button class="btn btn-primary" onclick="saveCard()">存檔</button>
         </div>
     </div>
 </div>
 
-<!-- 其他 Modal 保持不變... -->
 <div id="tab-modal" class="overlay">
     <div class="modal">
         <h2>分頁設定</h2>
@@ -207,8 +205,7 @@
     window.db_data = [];
     window.designers = [];
     let curIdx = 0;
-    let tabEditIdx = null;
-    let cardEditTarget = null; // { pIdx, cIdx }
+    let cardEditTarget = null;
     let sigMode = '';
     let currentStaffSig = null;
     let custSigTarget = null;
@@ -222,7 +219,6 @@
                 window.render();
             }
         });
-
         onSnapshot(doc(db, "config", "salon_settings"), (docSnap) => {
             if (docSnap.exists()) {
                 const config = docSnap.data();
@@ -243,7 +239,6 @@
         const slider = document.getElementById('main-slider');
         const searchTerm = (document.getElementById('global-search')?.value || "").toLowerCase().trim();
         const filterDesigner = document.getElementById('designer-filter')?.value || "all";
-
         if (!bar || !slider) return;
         bar.innerHTML = ''; slider.innerHTML = '';
 
@@ -264,13 +259,11 @@
 
             const pg = document.createElement('div'); 
             pg.className = 'page';
-            
             const cardsToDisplay = (page.cards || []).filter(card => {
                 const matchesSearch = searchTerm === "" || card.name.toLowerCase().includes(searchTerm) || card.phone.includes(searchTerm);
                 const matchesDesigner = filterDesigner === "all" || card.designer === filterDesigner;
                 return matchesSearch && matchesDesigner;
             });
-
             cardsToDisplay.forEach((card) => {
                 const realCIdx = page.cards.findIndex(c => c === card);
                 const cardEl = document.createElement('div');
@@ -290,7 +283,6 @@
                 `;
                 pg.appendChild(cardEl);
             });
-
             if (!page.isArchive && searchTerm === "" && filterDesigner === "all") {
                 const add = document.createElement('div');
                 add.className = 'add-placeholder';
@@ -305,12 +297,7 @@
 
     window.showCardEdit = function(pIdx, cIdx) {
         cardEditTarget = (cIdx !== null) ? { pIdx, cIdx } : null;
-        
-        // 按鈕顯示邏輯
-        const isArchivePage = window.db_data[pIdx].isArchive;
-        document.getElementById('archive-btn').style.display = (cIdx !== null && !isArchivePage) ? 'block' : 'none';
         document.getElementById('delete-card-btn').style.display = (cIdx !== null) ? 'block' : 'none';
-
         if (cardEditTarget) {
             const c = window.db_data[pIdx].cards[cIdx];
             document.getElementById('in-name').value = c.name;
@@ -342,32 +329,34 @@
         await saveCloud(); window.hideModal('card-modal');
     }
 
-    // --- 歸檔功能：移動卡片 ---
-    window.archiveCurrent = async function() {
-        if (cardEditTarget && confirm("確認將此卡移動至「歸檔紀錄」嗎？")) {
-            // 從原本頁面取出並刪除
-            const card = window.db_data[cardEditTarget.pIdx].cards.splice(cardEditTarget.cIdx, 1)[0];
-            
-            // 找到歸檔頁面並推入
-            const arch = window.db_data.find(p => p.isArchive);
-            if (arch) { 
-                if(!arch.cards) arch.cards = []; 
-                arch.cards.push(card); 
-            }
-            
-            await saveCloud(); 
-            window.hideModal('card-modal');
+    // --- 自動歸檔核心邏輯 ---
+    async function autoArchive(pIdx, cIdx) {
+        const card = window.db_data[pIdx].cards[cIdx];
+        const usedCount = Object.keys(card.signs || {}).length;
+        
+        if (usedCount >= card.stamps) {
+            setTimeout(async () => {
+                alert(`🎊 顧客 ${card.name} 已完成所有服務！\n系統將自動歸檔此卡片。`);
+                
+                // 從目前分頁移除
+                const movedCard = window.db_data[pIdx].cards.splice(cIdx, 1)[0];
+                
+                // 移入歸檔分頁
+                const arch = window.db_data.find(p => p.isArchive);
+                if (arch) {
+                    if(!arch.cards) arch.cards = [];
+                    arch.cards.push(movedCard);
+                }
+                
+                await saveCloud();
+            }, 500);
         }
     }
 
-    // --- 刪除功能：徹底移除卡片 ---
     window.deleteCurrentCard = async function() {
-        if (cardEditTarget && confirm("🚨 確定要永久刪除這張顧客卡片嗎？此動作無法復原！")) {
-            // 直接從對應陣列刪除
+        if (cardEditTarget && confirm("🚨 確定永久刪除此卡片？")) {
             window.db_data[cardEditTarget.pIdx].cards.splice(cardEditTarget.cIdx, 1);
-            
-            await saveCloud();
-            window.hideModal('card-modal');
+            await saveCloud(); window.hideModal('card-modal');
         }
     }
 
@@ -377,7 +366,6 @@
         }
     }
 
-    // --- 其餘系統功能 (簽名、分頁等) 保持原樣... ---
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     window.openSignature = function(mode, p, c, s) {
@@ -391,11 +379,12 @@
         ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = '#1c1c1e';
     }
     let drawing = false;
-    canvas.onmousedown = canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); const p = getPos(e); ctx.moveTo(p.x, p.y); };
-    canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); e.preventDefault(); };
+    canvas.onmousedown = canvas.ontouchstart = (e) => { drawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); };
+    canvas.onmousemove = canvas.ontouchmove = (e) => { if(!drawing) return; const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); e.preventDefault(); };
     canvas.onmouseup = canvas.ontouchend = () => drawing = false;
     function getPos(e) { const rect = canvas.getBoundingClientRect(); return { x: (e.touches?e.touches[0].clientX:e.clientX)-rect.left, y: (e.touches?e.touches[0].clientY:e.clientY)-rect.top }; }
     window.clearCanvas = () => ctx.clearRect(0,0,canvas.width,canvas.height);
+    
     window.confirmSignature = async function() {
         const url = canvas.toDataURL();
         if (sigMode === 'staff') {
@@ -404,9 +393,15 @@
         } else {
             const now = new Date();
             const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
-            if (!window.db_data[custSigTarget.p].cards[custSigTarget.c].signs) window.db_data[custSigTarget.p].cards[custSigTarget.c].signs = {};
-            window.db_data[custSigTarget.p].cards[custSigTarget.c].signs[custSigTarget.s] = { img: url, time: timeStr };
+            const targetCard = window.db_data[custSigTarget.p].cards[custSigTarget.c];
+            if (!targetCard.signs) targetCard.signs = {};
+            targetCard.signs[custSigTarget.s] = { img: url, time: timeStr };
+            
             await saveCloud();
+            // 簽名完後立即偵測是否滿格
+            if (!window.db_data[custSigTarget.p].isArchive) {
+                await autoArchive(custSigTarget.p, custSigTarget.c);
+            }
         }
         window.hideModal('sig-modal');
     }
@@ -422,22 +417,22 @@
         if (el) el.innerHTML = window.designers.map(d => `<option value="${d}">${d}</option>`).join('');
         const filterEl = document.getElementById('designer-filter');
         if (filterEl) {
-            const currentVal = filterEl.value;
+            const cur = filterEl.value;
             filterEl.innerHTML = '<option value="all">所有設計師</option>' + window.designers.map(d => `<option value="${d}">${d}</option>`).join('');
-            filterEl.value = currentVal;
+            filterEl.value = cur;
         }
     }
-    window.addNewTab = () => { tabEditIdx = null; document.getElementById('tab-modal').style.display = 'flex'; };
-    window.editTab = (idx) => { tabEditIdx = idx; document.getElementById('tab-modal').style.display = 'flex'; document.getElementById('delete-zone').style.display='block'; };
+    window.addNewTab = () => { window.tabEditIdx = null; document.getElementById('tab-modal').style.display = 'flex'; };
+    window.editTab = (idx) => { window.tabEditIdx = idx; document.getElementById('tab-modal').style.display = 'flex'; document.getElementById('delete-zone').style.display='block'; };
     window.saveTab = async function() {
         const name = document.getElementById('tab-name-input').value;
         const des = document.getElementById('designer-list-input').value.split(',').map(d=>d.trim());
         await setDoc(doc(db, "config", "salon_settings"), { designers: des }, { merge: true });
         if(name) {
-            if(tabEditIdx!==null) {
-                const old = window.db_data[tabEditIdx].title;
+            if(window.tabEditIdx!==null) {
+                const old = window.db_data[window.tabEditIdx].title;
                 if(old!==name) await deleteDoc(doc(db, "service_cards", old));
-                window.db_data[tabEditIdx].title = name;
+                window.db_data[window.tabEditIdx].title = name;
             } else {
                 window.db_data.splice(window.db_data.length-1, 0, { title: name, cards: [], order: window.db_data.length });
             }
@@ -448,8 +443,8 @@
     window.secureDelete = async function() {
         if(document.getElementById('delete-password').value === "8888") {
             if(confirm("確定刪除分頁？")) {
-                await deleteDoc(doc(db, "service_cards", window.db_data[tabEditIdx].title));
-                window.db_data.splice(tabEditIdx, 1); curIdx=0; window.render(); window.hideModal('tab-modal');
+                await deleteDoc(doc(db, "service_cards", window.db_data[window.tabEditIdx].title));
+                window.db_data.splice(window.tabEditIdx, 1); curIdx=0; window.render(); window.hideModal('tab-modal');
             }
         } else alert("密碼錯誤");
     }
