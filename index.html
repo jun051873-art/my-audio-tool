@@ -2,8 +2,10 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>EXCLUSIVE SPACE | 智慧管理系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>EXCLUSIVE SPACE</title>
     <style>
         :root {
             --accent: #007AFF;
@@ -13,15 +15,28 @@
             --danger: #FF3B30;
         }
 
+        /* 原生 App 感：禁用選取與彈跳 */
+        * { 
+            -webkit-tap-highlight-color: transparent; 
+            -webkit-touch-callout: none; 
+            user-select: none; 
+            box-sizing: border-box;
+        }
+
         body, html {
             margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: -apple-system, "SF Pro Display", "PingFang TC", sans-serif;
-            background: var(--liquid-bg); overflow: hidden; color: #1c1c1e;
-            -webkit-font-smoothing: antialiased;
+            background: var(--liquid-bg); 
+            overflow: hidden; /* 禁止全體滾動，像 App 一樣 */
+            color: #1c1c1e;
+            position: fixed; /* 徹底鎖死瀏覽器彈跳 */
         }
 
+        /* 隱藏所有滾動條 */
+        ::-webkit-scrollbar { display: none; }
+
         header {
-            height: 90px; display: flex; align-items: center; padding: 0 40px;
+            height: 90px; display: flex; align-items: center; padding: env(safe-area-inset-top) 40px 0;
             background: rgba(255, 255, 255, 0.2); backdrop-filter: var(--blur);
             -webkit-backdrop-filter: var(--blur);
             border-bottom: 0.5px solid rgba(255, 255, 255, 0.3); z-index: 1000;
@@ -39,6 +54,7 @@
             width: 100%; background: rgba(255, 255, 255, 0.35); border: none;
             padding: 12px 20px 12px 45px; border-radius: 20px; outline: none;
             font-size: 16px; backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.2);
+            user-select: text; /* 只有輸入框可以選文字 */
         }
         .search-container::before { content: '🔍'; position: absolute; left: 15px; top: 12px; opacity: 0.4; }
 
@@ -51,7 +67,6 @@
         }
         .tab.active { background: #fff; color: var(--accent); box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateY(-2px); }
         .tab-set-btn { font-size: 14px; opacity: 0.3; transition: 0.3s; }
-        .tab-set-btn:hover { opacity: 1; transform: rotate(45deg); color: var(--accent); }
 
         .add-tab-btn { 
             width: 42px; height: 42px; border-radius: 15px; 
@@ -63,46 +78,46 @@
         .add-tab-btn:hover { background: #fff; transform: rotate(90deg) scale(1.1); }
 
         #main-slider { display: flex; height: calc(100vh - 90px); transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
-        .page { min-width: 100vw; height: 100%; overflow-y: auto; padding: 40px; box-sizing: border-box; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); align-content: start; gap: 30px; }
+        .page { 
+            min-width: 100vw; height: 100%; overflow-y: scroll; /* 頁面內滾動 */
+            padding: 40px; box-sizing: border-box; display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); 
+            align-content: start; gap: 30px; 
+            -webkit-overflow-scrolling: touch;
+        }
 
-        /* 卡片設計 */
-        .card { background: var(--glass-white); border-radius: 42px; padding: 30px; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: var(--blur); box-shadow: 0 25px 50px rgba(0,0,0,0.06); position: relative; transition: 0.4s; }
-        .card:hover { transform: translateY(-8px); }
+        .card { background: var(--glass-white); border-radius: 42px; padding: 30px; border: 1px solid rgba(255,255,255,0.5); backdrop-filter: var(--blur); box-shadow: 0 25px 50px rgba(0,0,0,0.06); position: relative; }
         .card-dots { position: absolute; top: 30px; right: 30px; width: 35px; height: 35px; background: rgba(255,255,255,0.4); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; gap: 3px; }
         .card-dots span { width: 4px; height: 4px; background: #1c1c1e; border-radius: 50%; }
         .card-name { font-size: 32px; font-weight: 800; margin-bottom: 8px; letter-spacing: -1.5px; }
         .card-sub { font-size: 15px; color: rgba(0,0,0,0.5); font-weight: 600; line-height: 1.6; }
 
-        /* 格子設計 */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 25px 0; }
         .cell { aspect-ratio: 1; background: rgba(255,255,255,0.4); border-radius: 18px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); transition: 0.3s; font-size: 16px; font-weight: 800; color: rgba(0,0,0,0.2); overflow: hidden; }
         .cell.used { background: rgba(255,255,255,0.95); border: none; }
         .cell img { width: 85%; height: 60%; object-fit: contain; }
         .cell .time { font-size: 9px; color: #8e8e93; transform: scale(0.8); margin-top: 4px; }
 
-        /* 新增佔位框 */
         .add-placeholder { border: 3px dashed rgba(255,255,255,0.6); border-radius: 42px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: rgba(0,0,0,0.3); font-weight: 800; cursor: pointer; min-height: 350px; transition: 0.4s; }
-        .add-placeholder:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,255,255,0.1); }
 
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); backdrop-filter: blur(35px); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal { background: rgba(255, 255, 255, 0.9); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
+        .modal { background: rgba(255, 255, 255, 0.9); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
 
         input, select, textarea { width: 100%; padding: 18px; margin: 12px 0; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); font-size: 16px; font-weight: 600; outline: none; box-sizing: border-box; }
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
-        .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; }
         .btn-primary { background: var(--accent); color: white; }
-        .btn-secondary { background: rgba(0,0,0,0.05); color: #1c1c1e; }
         .btn-danger { background: var(--danger); color: white; }
 
         canvas { background: white; border-radius: 30px; width: 100%; height: 300px; touch-action: none; border: 1px solid rgba(0,0,0,0.05); }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;"> <!-- 禁止右鍵菜單 -->
 
 <header>
     <div class="shop-id" id="shop-name-display" onclick="changeShopName()">EXCLUSIVE SPACE</div>
     <div class="search-container">
-        <input type="text" id="global-search" placeholder="搜尋姓名、手機、設計師..." oninput="window.render()">
+        <input type="text" id="global-search" placeholder="搜尋姓名、手機..." oninput="window.render()">
     </div>
     <div class="tab-bar" id="tab-bar"></div>
     <div class="add-tab-btn" onclick="addNewTab()">＋</div>
@@ -110,27 +125,27 @@
 
 <div id="main-slider"></div>
 
-<!-- 保卡編輯 Modal -->
+<!-- 卡片編輯 Modal -->
 <div id="card-modal" class="overlay">
     <div class="modal">
-        <h2 id="card-modal-title">護髮保卡設定</h2>
+        <h2 style="font-weight: 900; letter-spacing: -1px;">保卡設定</h2>
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <input type="text" id="in-name" placeholder="顧客姓名">
-            <input type="text" id="in-phone" placeholder="電話號碼">
-            <input type="number" id="in-stamps" placeholder="服務總次數">
+            <input type="text" id="in-phone" placeholder="電話">
+            <input type="number" id="in-stamps" placeholder="服務格數">
             <input type="text" id="in-birthday" placeholder="生日 (MM/DD)">
         </div>
         <select id="in-designer"></select>
         <div style="margin-top:20px;">
-            <p style="font-size:14px; font-weight:800; color:#8e8e93; margin-bottom:12px;">設計師簽名 (點擊下方區域)</p>
+            <p style="font-size:14px; font-weight:800; color:#8e8e93; margin-bottom:12px;">設計師簽署</p>
             <div id="staff-sig-box" onclick="openSignature('staff')" style="width:140px; height:75px; background:rgba(255,255,255,0.6); border-radius:20px; display:flex; justify-content:center; align-items:center; cursor:pointer; overflow:hidden; border: 1px solid rgba(0,0,0,0.05);">
                 <span style="font-size:13px; color:#c7c7cc;">點擊簽名</span>
             </div>
         </div>
         <div class="btn-group">
-            <button class="btn btn-secondary" onclick="hideModal('card-modal')">返回</button>
-            <button class="btn btn-danger" id="archive-btn" style="display:none;" onclick="archiveCurrent()">歸檔此卡</button>
-            <button class="btn btn-primary" onclick="saveCard()">確認存檔</button>
+            <button class="btn" style="background: rgba(0,0,0,0.05);" onclick="hideModal('card-modal')">返回</button>
+            <button class="btn btn-danger" id="archive-btn" style="display:none;" onclick="archiveCurrent()">歸檔</button>
+            <button class="btn btn-primary" onclick="saveCard()">存檔</button>
         </div>
     </div>
 </div>
@@ -138,17 +153,17 @@
 <!-- 分頁設定 Modal -->
 <div id="tab-modal" class="overlay">
     <div class="modal">
-        <h2 id="tab-modal-title">分頁偏好設定</h2>
+        <h2>分頁設定</h2>
         <input type="text" id="tab-name-input" placeholder="分頁名稱">
         <textarea id="designer-list-input" rows="2" placeholder="設計師名單 (以逗號隔開)"></textarea>
         <div id="delete-zone" style="border-top: 1px solid rgba(0,0,0,0.05); margin-top: 20px; padding-top: 20px; display: none;">
-            <p style="font-size: 14px; font-weight: 800; color: var(--danger);">🚨 頁面刪除安全防護</p>
-            <input type="password" id="delete-password" placeholder="請輸入刪除管理密碼">
-            <button class="btn btn-danger" style="width:100%;" onclick="secureDelete()">驗證密碼並永久刪除</button>
+            <p style="font-size: 14px; font-weight: 800; color: var(--danger);">🚨 刪除頁面安全防護</p>
+            <input type="password" id="delete-password" placeholder="輸入 8888 刪除">
+            <button class="btn btn-danger" style="width:100%;" onclick="secureDelete()">永久刪除頁面</button>
         </div>
         <div class="btn-group">
-            <button class="btn btn-secondary" onclick="hideModal('tab-modal')">取消</button>
-            <button class="btn btn-primary" onclick="saveTab()">確認儲存</button>
+            <button class="btn" style="background: rgba(0,0,0,0.05);" onclick="hideModal('tab-modal')">取消</button>
+            <button class="btn btn-primary" onclick="saveTab()">儲存</button>
         </div>
     </div>
 </div>
@@ -156,12 +171,12 @@
 <!-- 簽名 Modal -->
 <div id="sig-modal" class="overlay">
     <div class="modal" style="max-width:650px;">
-        <h2 id="sig-title">電子簽署確認</h2>
+        <h2 id="sig-title">電子簽署</h2>
         <canvas id="sig-canvas"></canvas>
         <div class="btn-group">
-            <button class="btn btn-secondary" onclick="hideModal('sig-modal')">取消</button>
-            <button class="btn btn-secondary" onclick="clearCanvas()">重寫</button>
-            <button class="btn btn-primary" onclick="confirmSignature()">確認核銷</button>
+            <button class="btn" style="background: rgba(0,0,0,0.05);" onclick="hideModal('sig-modal')">取消</button>
+            <button class="btn" style="background: rgba(0,0,0,0.05);" onclick="clearCanvas()">重寫</button>
+            <button class="btn btn-primary" onclick="confirmSignature()">確認</button>
         </div>
     </div>
 </div>
@@ -186,17 +201,17 @@
     window.designers = [];
     let curIdx = 0;
     let tabEditIdx = null;
-    let cardEditTarget = null; // { pIdx, cIdx }
-    let sigMode = ''; // 'staff' or 'cust'
+    let cardEditTarget = null;
+    let sigMode = '';
     let currentStaffSig = null;
-    let custSigTarget = null; // { pIdx, cIdx, sIdx }
-    const ADMIN_PASSWORD = "8888";
+    let custSigTarget = null;
 
     async function syncData() {
         onSnapshot(collection(db, "service_cards"), (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (data.length === 0) initDefaultPages();
-            else {
+            if (data.length === 0) {
+                initDefaultPages();
+            } else {
                 window.db_data = data.sort((a, b) => (a.order || 0) - (b.order || 0));
                 window.render();
             }
@@ -225,7 +240,6 @@
         bar.innerHTML = ''; slider.innerHTML = '';
 
         window.db_data.forEach((page, pIdx) => {
-            // 標籤
             const t = document.createElement('div');
             t.className = `tab ${pIdx === curIdx ? 'active' : ''}`;
             const txt = document.createElement('span');
@@ -240,13 +254,11 @@
             }
             bar.appendChild(t);
 
-            // 頁面
             const pg = document.createElement('div'); 
             pg.className = 'page';
             
-            // 濾過卡片
             const filteredCards = (page.cards || []).filter(c => 
-                c.name.toLowerCase().includes(searchTerm) || c.phone.includes(searchTerm) || (c.designer && c.designer.toLowerCase().includes(searchTerm))
+                c.name.toLowerCase().includes(searchTerm) || c.phone.includes(searchTerm)
             );
 
             filteredCards.forEach((card, cIdx) => {
@@ -255,7 +267,7 @@
                 cardEl.innerHTML = `
                     <div class="card-dots" onclick="window.showCardEdit(${pIdx}, ${cIdx})"><span></span><span></span><span></span></div>
                     <div class="card-name">${card.name}</div>
-                    <div class="card-sub">📞 ${card.phone} | 🎂 ${card.birthday}<br>✨ 設計師: ${card.designer}</div>
+                    <div class="card-sub">📞 ${card.phone} | ✨ ${card.designer}</div>
                     <div class="grid">
                         ${Array.from({length: card.stamps}).map((_, i) => {
                             const s = (card.signs || {})[i];
@@ -280,7 +292,6 @@
         window.updateSlider();
     }
 
-    // --- 保卡編輯邏輯 ---
     window.showCardEdit = function(pIdx, cIdx) {
         cardEditTarget = (cIdx !== null) ? { pIdx, cIdx } : null;
         document.getElementById('archive-btn').style.display = (cIdx !== null) ? 'block' : 'none';
@@ -330,7 +341,6 @@
         }
     }
 
-    // --- 簽名系統 ---
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     window.openSignature = function(mode, p, c, s) {
@@ -338,9 +348,6 @@
         if (mode === 'cust') {
             if (window.db_data[p].cards[c].signs && window.db_data[p].cards[c].signs[s]) return;
             custSigTarget = { p, c, s };
-            document.getElementById('sig-title').innerText = '顧客核銷簽名';
-        } else {
-            document.getElementById('sig-title').innerText = '設計師授權簽名';
         }
         document.getElementById('sig-modal').style.display = 'flex';
         canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
@@ -367,7 +374,6 @@
         window.hideModal('sig-modal');
     }
 
-    // --- 其他原有功能 ---
     window.updateSlider = () => document.getElementById('main-slider').style.transform = `translateX(-${curIdx * 100}vw)`;
     window.hideModal = (id) => document.getElementById(id).style.display = 'none';
     window.changeShopName = async function() {
@@ -397,7 +403,7 @@
         window.hideModal('tab-modal');
     }
     window.secureDelete = async function() {
-        if(document.getElementById('delete-password').value === ADMIN_PASSWORD) {
+        if(document.getElementById('delete-password').value === "8888") {
             if(confirm("確定刪除？")) {
                 await deleteDoc(doc(db, "service_cards", window.db_data[tabEditIdx].title));
                 window.db_data.splice(tabEditIdx, 1); curIdx=0; window.render(); window.hideModal('tab-modal');
