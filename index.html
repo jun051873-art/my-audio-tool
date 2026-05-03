@@ -58,14 +58,23 @@
             border: 1px solid rgba(255,255,255,0.2); color: #1c1c1e;
         }
 
-        .tab-bar { display: flex; gap: 10px; margin-left: auto; align-items: center; }
+        /* 強化標籤導覽列顯示 */
+        .tab-bar { display: flex; gap: 12px; margin-left: auto; align-items: center; }
         .tab { 
-            padding: 10px 22px; border-radius: 18px; cursor: pointer; 
-            font-size: 15px; font-weight: 700; color: rgba(0,0,0,0.4); 
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-            background: rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;
+            padding: 12px 24px; border-radius: 20px; cursor: pointer; 
+            font-size: 16px; font-weight: 600; color: rgba(0,0,0,0.3); 
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            background: rgba(255,255,255,0.05); display: flex; align-items: center; gap: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        .tab.active { background: #fff; color: var(--accent); box-shadow: 0 10px 25px rgba(0,0,0,0.08); transform: translateY(-2px); }
+        .tab.active { 
+            background: #fff; 
+            color: #000; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12); 
+            transform: translateY(-2px);
+            border: 1px solid #fff;
+            font-weight: 800;
+        }
         .tab-set-btn { font-size: 14px; opacity: 0.3; }
 
         .add-tab-btn { 
@@ -102,6 +111,10 @@
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.1); backdrop-filter: blur(35px); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal { background: rgba(255, 255, 255, 0.9); border-radius: 45px; padding: 45px; width: 90%; max-width: 550px; border: 1px solid white; box-shadow: 0 30px 80px rgba(0,0,0,0.15); max-height: 85vh; overflow-y: auto; }
 
+        /* 預覽視窗樣式 */
+        .preview-img { width: 100%; background: white; border-radius: 25px; margin-bottom: 20px; border: 1px solid #eee; }
+        .preview-time { font-size: 24px; font-weight: 800; text-align: center; color: var(--accent); margin-bottom: 10px; }
+
         input, select, textarea { width: 100%; padding: 18px; margin: 12px 0; border-radius: 20px; border: 1px solid rgba(0,0,0,0.05); background: rgba(255,255,255,0.5); font-size: 16px; font-weight: 600; outline: none; box-sizing: border-box; }
         .btn-group { display: flex; gap: 15px; margin-top: 30px; }
         .btn { flex: 1; padding: 20px; border-radius: 22px; border: none; font-weight: 800; font-size: 16px; cursor: pointer; }
@@ -132,6 +145,7 @@
 
 <div id="main-slider"></div>
 
+<!-- 卡片編輯視窗 -->
 <div id="card-modal" class="overlay">
     <div class="modal">
         <h2 style="font-weight: 900; letter-spacing: -1px;">保卡設定</h2>
@@ -156,6 +170,7 @@
     </div>
 </div>
 
+<!-- 分頁編輯視窗 -->
 <div id="tab-modal" class="overlay">
     <div class="modal">
         <h2>分頁設定</h2>
@@ -173,6 +188,7 @@
     </div>
 </div>
 
+<!-- 簽名板視窗 -->
 <div id="sig-modal" class="overlay">
     <div class="modal" style="max-width:650px;">
         <h2 id="sig-title">電子簽署</h2>
@@ -182,6 +198,16 @@
             <button class="btn btn-secondary" onclick="clearCanvas()">重寫</button>
             <button class="btn btn-primary" onclick="confirmSignature()">確認</button>
         </div>
+    </div>
+</div>
+
+<!-- 簽名放大預覽視窗 -->
+<div id="preview-modal" class="overlay">
+    <div class="modal" style="max-width:500px;">
+        <h2 style="font-weight: 900;">簽名憑證確認</h2>
+        <div class="preview-time" id="preview-time-text"></div>
+        <img id="preview-image-box" class="preview-img" src="">
+        <button class="btn btn-primary" style="width:100%" onclick="hideModal('preview-modal')">確認關閉</button>
     </div>
 </div>
 
@@ -244,10 +270,11 @@
 
         window.db_data.forEach((page, pIdx) => {
             const t = document.createElement('div');
+            // 強化當前分頁顯示
             t.className = `tab ${pIdx === curIdx ? 'active' : ''}`;
             const txt = document.createElement('span');
             txt.innerText = page.title;
-            txt.onclick = () => { curIdx = pIdx; window.updateSlider(); };
+            txt.onclick = () => { curIdx = pIdx; window.updateSlider(); window.render(); };
             t.appendChild(txt);
             if (!page.isArchive) {
                 const setBtn = document.createElement('span');
@@ -264,6 +291,7 @@
                 const matchesDesigner = filterDesigner === "all" || card.designer === filterDesigner;
                 return matchesSearch && matchesDesigner;
             });
+            
             cardsToDisplay.forEach((card) => {
                 const realCIdx = page.cards.findIndex(c => c === card);
                 const cardEl = document.createElement('div');
@@ -275,7 +303,8 @@
                     <div class="grid">
                         ${Array.from({length: card.stamps}).map((_, i) => {
                             const s = (card.signs || {})[i];
-                            return `<div class="cell ${s?'used':''}" onclick="window.openSignature('cust', ${pIdx}, ${realCIdx}, ${i})">
+                            // 已簽名顯示縮圖並可放大，未簽名點擊簽署
+                            return `<div class="cell ${s?'used':''}" onclick="${s ? `window.previewSig('${s.img}', '${s.time}')` : `window.openSignature('cust', ${pIdx}, ${realCIdx}, ${i})`}">
                                 ${s ? `<img src="${s.img}"><div class="time">${s.time}</div>` : i+1}
                             </div>`;
                         }).join('')}
@@ -283,6 +312,7 @@
                 `;
                 pg.appendChild(cardEl);
             });
+            
             if (!page.isArchive && searchTerm === "" && filterDesigner === "all") {
                 const add = document.createElement('div');
                 add.className = 'add-placeholder';
@@ -293,6 +323,13 @@
             slider.appendChild(pg);
         });
         window.updateSlider();
+    }
+
+    // 簽名放大預覽功能
+    window.previewSig = function(img, time) {
+        document.getElementById('preview-image-box').src = img;
+        document.getElementById('preview-time-text').innerText = "簽署時間：" + time;
+        document.getElementById('preview-modal').style.display = 'flex';
     }
 
     window.showCardEdit = function(pIdx, cIdx) {
@@ -329,7 +366,6 @@
         await saveCloud(); window.hideModal('card-modal');
     }
 
-    // --- 核心邏輯修正：自動歸檔且即時消失 ---
     async function autoArchive(pIdx, cIdx) {
         const card = window.db_data[pIdx].cards[cIdx];
         const usedCount = Object.keys(card.signs || {}).length;
@@ -338,20 +374,12 @@
                 alert(`🎊 顧客 ${card.name} 護髮完成！卡片已自動歸檔。`);
                 const currentTab = window.db_data[pIdx];
                 const archiveTab = window.db_data.find(p => p.isArchive);
-                
-                // 從本地移除
                 const [movedCard] = currentTab.cards.splice(cIdx, 1);
-                
-                // 放入歸檔
                 if (archiveTab) {
                     if(!archiveTab.cards) archiveTab.cards = [];
                     archiveTab.cards.push(movedCard);
                 }
-                
-                // 即時刷新 UI
                 window.render();
-                
-                // 同步雲端
                 await setDoc(doc(db, "service_cards", currentTab.title), JSON.parse(JSON.stringify(currentTab)));
                 if (archiveTab) {
                     await setDoc(doc(db, "service_cards", archiveTab.title), JSON.parse(JSON.stringify(archiveTab)));
@@ -360,7 +388,6 @@
         }
     }
 
-    // --- 核心邏輯修正：卡片刪除功能 ---
     window.deleteCurrentCard = async function() {
         if (cardEditTarget && confirm("🚨 確定永久刪除此卡片？")) {
             const { pIdx, cIdx } = cardEditTarget;
@@ -382,7 +409,6 @@
     window.openSignature = function(mode, p, c, s) {
         sigMode = mode;
         if (mode === 'cust') {
-            if (window.db_data[p].cards[c].signs && window.db_data[p].cards[c].signs[s]) return;
             custSigTarget = { p, c, s };
         }
         document.getElementById('sig-modal').style.display = 'flex';
@@ -396,7 +422,6 @@
     function getPos(e) { const rect = canvas.getBoundingClientRect(); return { x: (e.touches?e.touches[0].clientX:e.clientX)-rect.left, y: (e.touches?e.touches[0].clientY:e.clientY)-rect.top }; }
     window.clearCanvas = () => ctx.clearRect(0,0,canvas.width,canvas.height);
     
-    // --- 核心邏輯修正：確認簽名不再卡死 ---
     window.confirmSignature = async function() {
         const url = canvas.toDataURL();
         if (sigMode === 'staff') {
@@ -405,12 +430,13 @@
             window.hideModal('sig-modal');
         } else {
             const now = new Date();
-            const timeStr = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
+            const timeStr = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')}`;
             const targetCard = window.db_data[custSigTarget.p].cards[custSigTarget.c];
             if (!targetCard.signs) targetCard.signs = {};
             targetCard.signs[custSigTarget.s] = { img: url, time: timeStr };
             
             window.hideModal('sig-modal');
+            window.render(); // 簽完立即刷新本地顯示縮圖
             
             if (!window.db_data[custSigTarget.p].isArchive) {
                 await autoArchive(custSigTarget.p, custSigTarget.c);
